@@ -694,5 +694,53 @@
     "threat": "INFO",
     "reason": "Normal Traffic",
     "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "1794474539625-67o4",
+    "timestamp": "12/11/2569 16:08:59",
+    "ip": "127.0.0.1",
+    "method": "GET",
+    "path": "/polemap/api/superadmin/users",
+    "status": 304,
+    "duration": 7,
+    "threat": "INFO",
+    "reason": "Normal Traffic",
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "1794474540565-p67c",
+    "timestamp": "12/11/2569 16:09:00",
+    "ip": "127.0.0.1",
+    "method": "GET",
+    "path": "/polemap/api/auth/verify",
+    "status": 401,
+    "duration": 1,
+    "threat": "WARN",
+    "reason": "Unauthorized / Failed Auth",
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "1794474551587-jv7a",
+    "timestamp": "12/11/2569 16:09:11",
+    "ip": "127.0.0.1",
+    "method": "POST",
+    "path": "/polemap/api/auth/login",
+    "status": 200,
+    "duration": 3,
+    "threat": "INFO",
+    "reason": "Normal Traffic",
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
+  },
+  {
+    "id": "1794474551597-f12w",
+    "timestamp": "12/11/2569 16:09:11",
+    "ip": "127.0.0.1",
+    "method": "GET",
+    "path": "/polemap/api/poles",
+    "status": 200,
+    "duration": 7,
+    "threat": "INFO",
+    "reason": "Normal Traffic",
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
   }
 ]

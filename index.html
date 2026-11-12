@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <!-- Fonts & Icons -->
+    <link rel="icon" type="image/png" href="polemap_logo.png">
+    <link rel="apple-touch-icon" href="polemap_logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -390,34 +392,51 @@
             100% { transform: scale(2.4); opacity: 0; }
         }
 
-        /* GPS Status HUD Pill on Map */
         #gps-live-hud {
-            position: absolute;
-            top: 52px;
-            right: 12px;
-            z-index: calc(var(--z-map) + 18);
-            background: rgba(15, 23, 42, 0.88);
-            color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.15);
+            display: none !important;
         }
-        #gps-live-hud .hud-recenter {
-            background: #0d6efd;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 2px 7px;
-            font-size: 10.5px;
-            font-family: 'Kanit', sans-serif;
-            cursor: pointer;
-            font-weight: 600;
+
+        /* Responsive List Grid:
+           - Mobile Portrait: 1 card per row (default)
+           - Mobile Landscape / Tablet: 2 cards per row
+           - Desktop / PC: 4 cards per row */
+        #list-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 560px) and (max-width: 1199px), (orientation: landscape) and (max-width: 1199px) {
+            #list-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1200px) {
+            #list-container {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+        #list-container .card {
+            margin-bottom: 0;
+            min-width: 0;
+        }
+
+        .logo-badge-opposite {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: #ffffff;
+            border: 1.5px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px;
+            flex-shrink: 0;
+        }
+        .logo-badge-opposite img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         /* FULLSCREEN MAP MODE (Portrait, Landscape, and PC) */
@@ -970,8 +989,8 @@
                 <i class="fas fa-times"></i>
             </span>
             <div
-                style="width:60px; height:60px; background:var(--primary); color:white; border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:24px;">
-                <i class="fas fa-user-shield"></i>
+                style="width:68px; height:68px; background:#ffffff; border:2px solid #0d6efd; box-shadow:0 4px 14px rgba(13,110,253,0.22); border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; padding:6px;">
+                <img src="polemap_logo.png" alt="POLE MAP" style="width:100%; height:100%; object-fit:contain;">
             </div>
             <h2 style="margin:0 0 10px; font-weight:700;">Staff Login</h2>
             <p style="font-size:13px; color:#6c757d; margin-bottom:25px;">กรุณาเข้าสู่ระบบเพื่อจัดการข้อมูล</p>
@@ -1000,7 +1019,8 @@
     <!-- 🏷️ HEADER (v2.6 Standard) -->
     <div class="header">
         <div id="main-title">
-            <i class="fas fa-broadcast-tower"></i> POLE MAP แม่สาย
+            <span class="logo-badge-opposite"><img src="polemap_logo.png" alt="POLE MAP"></span>
+            <span>POLE MAP แม่สาย</span>
         </div>
         <div class="header-actions">
             <div id="user-info"></div>
@@ -1048,12 +1068,6 @@
                 <div id="btn-toggle-map" onclick="window.toggleMap()">
                     <i class="fas fa-eye-slash"></i> ซ่อนแผนที่
                 </div>
-            </div>
-
-            <div id="gps-live-hud">
-                <i class="fas fa-satellite-dish fa-spin" style="color:#38bdf8;"></i>
-                <span id="gps-live-coords">กำลังค้นหาสัญญาณ GPS...</span>
-                <button type="button" class="hud-recenter" onclick="window.centerOnMyGps()">จุดของฉัน</button>
             </div>
 
             <div id="fs-floating-dock">

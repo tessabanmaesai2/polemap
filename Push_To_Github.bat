@@ -29,3 +29,4 @@ if %errorlevel% neq 0 (
 echo.
 echo กดปุ่มใดๆ เพื่อปิดหน้าต่างนี้...
 pause >nul
+

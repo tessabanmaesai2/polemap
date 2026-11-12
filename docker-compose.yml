@@ -18,4 +18,7 @@ services:
       - ./index.html:/app/index.html
       - ./manage.html:/app/manage.html
       - ./back.html:/app/back.html
+      - ./server.cjs:/app/server.cjs
+      - ./polemap_logo.png:/app/polemap_logo.png
+      - ./public/polemap_logo.png:/app/public/polemap_logo.png
 

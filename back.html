@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบจัดการบัญชีผู้ใช้งานและเรดาร์ความปลอดภัย — POLE MAP แม่สาย</title>
+  <link rel="icon" type="image/png" href="polemap_logo.png">
+  <link rel="apple-touch-icon" href="polemap_logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -123,16 +125,22 @@
     }
 
     .brand-icon {
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       border-radius: 12px;
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      background: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
-      color: #fff;
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+      padding: 4px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      flex-shrink: 0;
+    }
+    .brand-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .brand-text h1 {
@@ -678,6 +686,9 @@
   <!-- ================= SUPERADMIN LOGIN GATE ================= -->
   <div class="auth-gate" id="authGate">
     <div class="auth-card">
+      <div style="width:68px; height:68px; border-radius:16px; background:#ffffff; border:2px solid #38bdf8; box-shadow:0 6px 20px rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; padding:6px; margin-bottom:14px;">
+        <img src="polemap_logo.png" alt="POLE MAP" style="width:100%; height:100%; object-fit:contain;">
+      </div>
       <div class="auth-badge">
         <i class="fa-solid fa-shield-halved"></i> RESTRICTED AREA — SUPER ADMIN ONLY
       </div>
@@ -704,7 +715,7 @@
   <!-- ================= TOPBAR ================= -->
   <header class="topbar">
     <div class="brand">
-      <div class="brand-icon"><i class="fa-solid fa-user-shield"></i></div>
+      <div class="brand-icon"><img src="polemap_logo.png" alt="POLE MAP"></div>
       <div class="brand-text">
         <h1>
           POLE MAP : SECURITY &amp; USER COCKPIT

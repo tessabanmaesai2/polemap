@@ -1034,6 +1034,13 @@ app.use('/uploads', express.static(UPLOADS_DIR));
 app.use('/polemap/public', express.static(path.join(PROJECT_DIR, 'public')));
 app.use('/public', express.static(path.join(PROJECT_DIR, 'public')));
 
+app.get(['/polemap/polemap_logo.png', '/polemap_logo.png'], (req, res) => {
+  const logoFile = fs.existsSync(path.join(PROJECT_DIR, 'polemap_logo.png'))
+    ? path.join(PROJECT_DIR, 'polemap_logo.png')
+    : path.join(PROJECT_DIR, 'public', 'polemap_logo.png');
+  res.sendFile(logoFile);
+});
+
 app.get(['/polemap', '/polemap/', '/', '/index', '/index.html', '/polemap/index', '/polemap/index.html'], (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.sendFile(path.join(PROJECT_DIR, 'index.html'));

@@ -1,0 +1,13 @@
+{
+  "name": "polemap",
+  "version": "1.0.0",
+  "description": "ระบบแผนที่เสาอัจฉริยะและอุปกรณ์ดิจิทัล เทศบาลตำบลแม่สาย",
+  "main": "server.cjs",
+  "scripts": {
+    "start": "node server.cjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "xlsx": "^0.18.5"
+  }
+}

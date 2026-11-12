@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POLE MAP แม่สาย — ระบบจัดการฐานข้อมูลเสาและอุปกรณ์ดิจิทัล</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --primary-dark: #0a58ca;
+      --border-color: #dadce0;
+      --header-bg: #f1f3f4;
+      --row-hover: #f8f9fa;
+      --cell-focus: #e8f0fe;
+      --text-main: #202124;
+      --text-muted: #5f6368;
+      --danger: #dc3545;
+      --warning: #f59e0b;
+      --success: #198754;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: #ffffff;
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Header Bar */
+    .topbar {
+      background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+      color: #ffffff;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      z-index: 100;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #ffffff;
+    }
+    .brand-title {
+      font-family: 'Prompt', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .brand-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .user-pill {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #ffffff;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-top {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.15);
+      color: #ffffff;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+    .btn-top:hover {
+      background: #ffffff;
+      color: var(--primary);
+    }
+    .btn-top.add-btn {
+      background: #198754;
+      border-color: #198754;
+      color: #ffffff;
+    }
+    .btn-top.add-btn:hover {
+      background: #157347;
+      color: #ffffff;
+    }
+    .btn-top.logout-btn {
+      background: rgba(220, 53, 69, 0.85);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .btn-top.logout-btn:hover {
+      background: #dc3545;
+      color: #ffffff;
+    }
+
+    /* KPI Summary Row */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 12px 18px 8px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .kpi-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.08);
+    }
+    .kpi-card.active-filter {
+      border-color: var(--primary);
+      background: #eff6ff;
+      box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+    }
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+    .kpi-val {
+      font-family: 'Prompt', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text-main);
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .kpi-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    /* Filter Toolbar */
+    .toolbar {
+      background: #f8f9fa;
+      border-bottom: 1px solid var(--border-color);
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+    .toolbar-search {
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      width: 280px;
+      outline: none;
+      background: #ffffff;
+    }
+    .toolbar-search:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(13,110,253,0.15);
+    }
+    .toolbar-select {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    /* Data Grid Container */
+    .grid-container {
+      flex: 1;
+      overflow: auto;
+      background: #ffffff;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+    .data-table th {
+      position: sticky;
+      top: 0;
+      background: var(--header-bg);
+      color: var(--text-main);
+      font-weight: 700;
+      text-align: left;
+      padding: 8px 8px;
+      border-bottom: 2px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      z-index: 10;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .data-table td {
+      border-bottom: 1px solid #e9ecef;
+      border-right: 1px solid #e9ecef;
+      padding: 4px 6px;
+      vertical-align: middle;
+      background: #ffffff;
+    }
+    .data-table tr:hover td {
+      background: var(--row-hover);
+    }
+    .col-idx {
+      width: 44px;
+      text-align: center !important;
+      background: var(--header-bg) !important;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    /* Cell Controls */
+    .cell-input {
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-main);
+      padding: 4px 6px;
+      border-radius: 4px;
+      outline: none;
+    }
+    .cell-input:focus {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(13,110,253,0.15);
+    }
+    .cell-select {
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-main);
+      padding: 4px 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      outline: none;
+    }
+    .cell-select:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+
+    /* Photo Cell with Explicit Upload / Edit / Delete Buttons */
+    .photo-cell-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cell-thumb {
+      width: 42px;
+      height: 42px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+    .cell-thumb:hover {
+      transform: scale(1.06);
+      border-color: var(--primary);
+    }
+    .cell-thumb-empty {
+      width: 42px;
+      height: 42px;
+      border-radius: 6px;
+      border: 1px dashed #94a3b8;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .cell-thumb-empty:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #eff6ff;
+    }
+    .photo-btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .btn-photo-mini {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #334155;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 10.5px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .btn-photo-mini:hover {
+      background: #eff6ff;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .btn-photo-mini.del {
+      color: var(--danger);
+      border-color: #fecaca;
+      background: #fff5f5;
+    }
+    .btn-photo-mini.del:hover {
+      background: var(--danger);
+      color: #ffffff;
+    }
+
+    /* Audit Cell (Created / Updated) */
+    .audit-box {
+      font-size: 11px;
+      line-height: 1.35;
+      color: var(--text-muted);
+      padding: 2px 4px;
+    }
+    .audit-user {
+      font-weight: 700;
+      color: #1e293b;
+      display: inline-block;
+    }
+    .audit-user.edited {
+      color: #0d6efd;
+    }
+    .audit-time {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: #64748b;
+    }
+
+    /* Row Action Buttons */
+    .btn-row-save {
+      background: var(--success);
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 9px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-row-save:hover { background: #157347; }
+    .btn-row-del {
+      background: #fee2e2;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-left: 4px;
+    }
+    .btn-row-del:hover { background: var(--danger); color: #ffffff; }
+
+    /* Footer */
+    .footer-bar {
+      background: #f8f9fa;
+      border-top: 1px solid var(--border-color);
+      padding: 6px 18px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: 20px;
+    }
+    .modal-card {
+      background: #ffffff;
+      padding: 22px;
+      border-radius: 12px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+
+    /* Frameless Image Lightbox (NO White Box!) */
+    .lightbox-wrapper {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: 92vw;
+      max-height: 90vh;
+    }
+    .lightbox-close-top {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #dc3545;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+      z-index: 20;
+    }
+    .lightbox-close-top:hover {
+      background: #bb2d3b;
+      transform: scale(1.08);
+    }
+    .lightbox-img {
+      display: block;
+      width: auto;
+      height: auto;
+      max-width: 88vw;
+      max-height: 76vh;
+      border-radius: 10px;
+      box-shadow: 0 15px 45px rgba(0,0,0,0.75);
+      object-fit: contain;
+      background: transparent;
+    }
+    .lightbox-actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-lightbox {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    }
+    .btn-lightbox.replace {
+      background: var(--primary);
+      color: #ffffff;
+    }
+    .btn-lightbox.del-img {
+      background: #f59e0b;
+      color: #ffffff;
+    }
+    .btn-lightbox.close {
+      background: #dc3545;
+      color: #ffffff;
+    }
+
+    /* Login Gate Overlay */
+    .login-gate {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5000;
+    }
+    .login-box {
+      background: #ffffff;
+      padding: 28px 26px;
+      border-radius: 14px;
+      width: 92%;
+      max-width: 390px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    .form-field {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      margin-bottom: 12px;
+      outline: none;
+    }
+    .form-field:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
+    }
+    .toast-msg {
+      position: fixed;
+      bottom: 44px;
+      right: 24px;
+      background: #1e293b;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      display: none;
+      z-index: 6000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header (Strictly No Link to /back) -->
+  <div class="topbar">
+    <div class="brand-group">
+      <div class="brand-icon"><i class="fa-solid fa-broadcast-tower"></i></div>
+      <div>
+        <div class="brand-title">POLE MAP แม่สาย — ระบบจัดการฐานข้อมูลเสาและอุปกรณ์ดิจิทัล</div>
+        <div class="brand-sub">เทศบาลตำบลแม่สาย จ.เชียงราย • บันทึกประวัติผู้ลงข้อมูลครั้งแรกและผู้แก้ไขล่าสุดแยกอิสระ (พ.ศ.)</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="user-pill" id="current-user-pill">
+        <i class="fa-solid fa-user-check"></i>
+        <span id="current-user-label">ยังไม่ได้เข้าสู่ระบบ</span>
+      </div>
+      <a href="/polemap/" class="btn-top"><i class="fa-solid fa-map-location-dot"></i> หน้าแผนที่</a>
+      <button class="btn-top add-btn" onclick="openAddRowModal()"><i class="fa-solid fa-plus"></i> เพิ่มจุดติดตั้งใหม่</button>
+      <button class="btn-top" onclick="reloadSheetData()"><i class="fa-solid fa-rotate"></i> โหลดใหม่</button>
+      <button class="btn-top logout-btn" id="btn-logout-top" onclick="logoutManage()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+    </div>
+  </div>
+
+  <!-- Top KPI Summary Cards -->
+  <div class="kpi-strip">
+    <div class="kpi-card" id="kpi-card-all" onclick="filterByKpiStatus('')">
+      <div>
+        <div class="kpi-title">จุดติดตั้งทั้งหมด</div>
+        <div class="kpi-val" id="kpi-total" style="color: var(--primary);">378</div>
+        <div class="kpi-sub" id="kpi-comm-count">10 ชุมชนในเขตเทศบาล</div>
+      </div>
+      <div class="kpi-icon-box" style="background: #e0f2fe; color: #0284c7;">
+        <i class="fa-solid fa-tower-broadcast"></i>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-card-active" onclick="filterByKpiStatus('ใช้งานได้')">
+      <div>
+        <div class="kpi-title">สถานะ: ใช้งานได้</div>
+        <div class="kpi-val" id="kpi-active" style="color: var(--success);">0</div>
+        <div class="kpi-sub">พร้อมทำงานปกติ</div>
+      </div>
+      <div class="kpi-icon-box" style="background: #dcfce7; color: #16a34a;">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-card-broken" onclick="filterByKpiStatus('ชำรุด')">
+      <div>
+        <div class="kpi-title">สถานะ: ชำรุด</div>
+        <div class="kpi-val" id="kpi-broken" style="color: var(--danger);">0</div>
+        <div class="kpi-sub">รอซ่อมบำรุง/แก้ไข</div>
+      </div>
+      <div class="kpi-icon-box" style="background: #fee2e2; color: #dc2626;">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-card-missing" onclick="filterByKpiStatus('สูญหาย')">
+      <div>
+        <div class="kpi-title">สถานะ: สูญหาย</div>
+        <div class="kpi-val" id="kpi-missing" style="color: #64748b;">0</div>
+        <div class="kpi-sub">ตรวจสอบไม่พบอุปกรณ์</div>
+      </div>
+      <div class="kpi-icon-box" style="background: #f1f5f9; color: #475569;">
+        <i class="fa-solid fa-circle-question"></i>
+      </div>
+    </div>
+
+    <div class="kpi-card" id="kpi-card-photos" onclick="toggleKpiPhotoFilter()" title="คลิกเพื่อกรองเฉพาะจุดที่รออัปโหลดรูปภาพ / มีรูปภาพแล้ว">
+      <div>
+        <div class="kpi-title">รูปภาพประกอบในระบบ</div>
+        <div class="kpi-val" id="kpi-photos" style="color: #7c3aed;">371</div>
+        <div class="kpi-sub" id="kpi-photos-sub">ครบสมบูรณ์ 371 จุด</div>
+      </div>
+      <div class="kpi-icon-box" style="background: #ede9fe; color: #7c3aed;">
+        <i class="fa-solid fa-camera"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <i class="fa-solid fa-magnifying-glass" style="color:var(--text-muted);"></i>
+      <input type="text" id="sheet-search" class="toolbar-search" placeholder="ค้นหาเป้าหมาย, ชื่อจุดติดตั้ง, ชุมชน, ประเภทอุปกรณ์, ผู้บันทึก..." oninput="renderGrid()" />
+      <select id="sheet-filter-comm" class="toolbar-select" onchange="renderGrid()">
+        <option value="">ชุมชน: ทั้งหมด</option>
+      </select>
+      <select id="sheet-filter-type" class="toolbar-select" onchange="renderGrid()">
+        <option value="">ประเภทอุปกรณ์: ทั้งหมด</option>
+        <option value="ลำโพง">ลำโพง</option>
+        <option value="ลำโพงไร้สาย">ลำโพงไร้สาย</option>
+        <option value="กล้องวงจรปิด">กล้องวงจรปิด</option>
+        <option value="เครื่องขยายเสียง">เครื่องขยายเสียง</option>
+        <option value="เซิฟเวอร์วงจรปิด">เซิฟเวอร์วงจรปิด</option>
+      </select>
+      <select id="sheet-filter-stat" class="toolbar-select" onchange="renderGrid()">
+        <option value="">สถานะ: ทั้งหมด</option>
+        <option value="ใช้งานได้">ใช้งานได้</option>
+        <option value="ชำรุด">ชำรุด</option>
+        <option value="สูญหาย">สูญหาย</option>
+      </select>
+    </div>
+    <div id="status-counter" style="font-weight: 700; color: var(--primary); font-size: 13px;">
+      แสดง 0 จาก 0 รายการ
+    </div>
+  </div>
+
+  <!-- Main Data Table (Pure Thai Headers) -->
+  <div class="grid-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-idx">#</th>
+          <th style="width: 120px;">รูปถ่าย</th>
+          <th style="width: 140px;">ประเภทอุปกรณ์</th>
+          <th style="width: 205px;">ชื่อจุดติดตั้ง</th>
+          <th style="width: 150px;">ชุมชน</th>
+          <th style="width: 140px;">ตำแหน่งติดตั้ง</th>
+          <th style="width: 110px;">สถานะ</th>
+          <th style="width: 195px;">พิกัด GPS</th>
+          <th style="width: 190px;">หมายเหตุ</th>
+          <th style="width: 140px;">ผู้ลงข้อมูลครั้งแรก (พ.ศ.)</th>
+          <th style="width: 140px;">ผู้แก้ไขล่าสุด (พ.ศ.)</th>
+          <th style="width: 100px; text-align: center;">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody id="grid-tbody">
+        <tr><td colspan="12" style="text-align:center; padding: 40px; color:#9aa0a6;">กำลังโหลดฐานข้อมูล...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bottom Status Bar -->
+  <div class="footer-bar">
+    <div id="footer-summary">กำลังเชื่อมต่อระบบฐานข้อมูล POLE MAP...</div>
+    <div>ระบบแยกบันทึกผู้ลงข้อมูลครั้งแรกและผู้แก้ไขล่าสุดอัตโนมัติ (ปี พ.ศ.) • ลบไฟล์ภาพเก่าอัตโนมัติเมื่อเปลี่ยนหรือลบ</div>
+  </div>
+
+  <!-- Hidden File Input with Client-Side Canvas Compression -->
+  <input type="file" id="cell-photo-input" accept="image/*" style="display:none;" onchange="handleCellPhotoUpload(event)" />
+
+  <!-- Frameless Image Lightbox Modal (No White Border + Explicit Close, Replace & Delete Buttons) -->
+  <div class="modal-overlay" id="img-modal" onclick="if(event.target===this) closeImageModal()">
+    <div class="lightbox-wrapper">
+      <button type="button" class="lightbox-close-top" onclick="closeImageModal()" title="ปิดรูปภาพ (Esc)">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <img id="zoom-img" class="lightbox-img" src="" alt="ภาพจุดติดตั้ง" />
+      <div class="lightbox-actions">
+        <button type="button" class="btn-lightbox replace" onclick="replaceCurrentModalPhoto()">
+          <i class="fa-solid fa-camera"></i> อัปโหลด / เปลี่ยนรูปใหม่
+        </button>
+        <button type="button" class="btn-lightbox del-img" onclick="deleteCurrentModalPhoto()">
+          <i class="fa-solid fa-trash-can"></i> ลบรูปภาพนี้
+        </button>
+        <button type="button" class="btn-lightbox close" onclick="closeImageModal()">
+          <i class="fa-solid fa-xmark"></i> ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Row Modal -->
+  <div class="modal-overlay" id="add-modal" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 style="font-family:'Prompt'; color: var(--primary); font-size:17px;">
+          <i class="fa-solid fa-plus-circle"></i> เพิ่มจุดติดตั้งใหม่
+        </h3>
+        <button type="button" onclick="document.getElementById('add-modal').style.display='none'" style="border:none; background:none; font-size:18px; cursor:pointer; color:#64748b;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">ชื่อจุดติดตั้ง *</label>
+        <input type="text" id="new-name" class="form-field" style="margin-bottom:0;" placeholder="เช่น ลำโพงตัวที่ 48 หรือ กล้องวงจรปิดแยกวัดถ้ำผาจม" />
+      </div>
+      <div style="display:flex; gap:10px; margin-bottom: 10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">ชุมชน *</label>
+          <input type="text" id="new-community" list="community-datalist" class="form-field" style="margin-bottom:0;" placeholder="เช่น ป่ายางชุม หมู่ 6" />
+          <datalist id="community-datalist"></datalist>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">ประเภทอุปกรณ์ *</label>
+          <select id="new-type" class="form-field" style="margin-bottom:0;">
+            <option value="ลำโพง">ลำโพง</option>
+            <option value="ลำโพงไร้สาย">ลำโพงไร้สาย</option>
+            <option value="กล้องวงจรปิด">กล้องวงจรปิด</option>
+            <option value="เครื่องขยายเสียง">เครื่องขยายเสียง</option>
+            <option value="เซิฟเวอร์วงจรปิด">เซิฟเวอร์วงจรปิด</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-bottom: 10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">ตำแหน่งติดตั้ง</label>
+          <select id="new-loc" class="form-field" style="margin-bottom:0;">
+            <option value="เสาไฟ">เสาไฟ</option>
+            <option value="เสาอื่นๆ">เสาอื่นๆ</option>
+            <option value="อาคาร/ห้องควบคุม">อาคาร/ห้องควบคุม</option>
+            <option value="ศาลาชุมชน">ศาลาชุมชน</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">สถานะ</label>
+          <select id="new-status" class="form-field" style="margin-bottom:0;">
+            <option value="ใช้งานได้">ใช้งานได้</option>
+            <option value="ชำรุด">ชำรุด</option>
+            <option value="สูญหาย">สูญหาย</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">พิกัด GPS (ละติจูด, ลองจิจูด) *</label>
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="new-coords" class="form-field" style="margin-bottom:0; font-family:monospace; flex:1;" placeholder="20.433500, 99.886000" />
+          <button type="button" class="btn-top" style="background:#0d6efd; color:#fff; border:none;" onclick="fetchCurrentGps()"><i class="fa-solid fa-location-crosshairs"></i> ดึงพิกัด</button>
+        </div>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">หมายเหตุ / จุดสังเกต</label>
+        <input type="text" id="new-note" class="form-field" style="margin-bottom:0;" placeholder="เช่น หน้าบ้านเลขที่ 120..." />
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">รูปถ่ายจุดติดตั้ง (ย่อขนาดอัตโนมัติ)</label>
+        <input type="file" id="new-photo-file" accept="image/*" class="form-field" style="margin-bottom:0; padding:6px;" onchange="handleNewModalPhoto(event)" />
+        <div id="new-photo-preview" style="font-size:12px; color:var(--success); margin-top:4px;"></div>
+      </div>
+      <div style="display:flex; justify-content: flex-end; gap:8px;">
+        <button type="button" class="btn-top" style="background:#e2e8f0; color:#1e293b; border:none;" onclick="document.getElementById('add-modal').style.display='none'">ยกเลิก</button>
+        <button type="button" class="btn-top add-btn" onclick="submitNewRow()"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mandatory Login Gate Modal -->
+  <div class="login-gate" id="login-gate">
+    <div class="login-box">
+      <div style="width:52px; height:52px; border-radius:12px; background:#e8f0fe; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 12px;">
+        <i class="fa-solid fa-user-lock"></i>
+      </div>
+      <h3 style="font-family:'Prompt'; font-size:18px; margin-bottom:4px;">เข้าสู่ระบบจัดการข้อมูล</h3>
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">กรุณายืนยันตัวตนเจ้าหน้าที่เพื่อบันทึกชื่อผู้เพิ่มและผู้แก้ไขข้อมูล</p>
+      <form onsubmit="submitManageLogin(event)">
+        <input type="text" id="login-username" class="form-field" placeholder="ชื่อผู้ใช้งาน" required autofocus />
+        <input type="password" id="login-password" class="form-field" placeholder="รหัสผ่าน" required />
+        <button type="submit" id="btn-login-submit" style="width:100%; padding:11px; background:var(--primary); color:#fff; border:none; border-radius:8px; font-weight:700; font-family:inherit; cursor:pointer;">
+          <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
+        </button>
+        <div id="login-err" style="color:var(--danger); font-size:12px; margin-top:10px; display:none;"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-msg" id="toast-msg"></div>
+
+  <script>
+    const isFile = window.location.protocol === 'file:';
+    const API_BASE = isFile ? 'http://127.0.0.1:3406/polemap/api' : (window.location.pathname.startsWith('/polemap') ? '/polemap/api' : '/api');
+    const UPLOAD_BASE = isFile ? 'http://127.0.0.1:3406/polemap/' : (window.location.pathname.startsWith('/polemap') ? '/polemap/' : '/');
+
+    let allRows = [];
+    let activeUploadRowId = null;
+    let currentModalRowId = null;
+    let newRowBase64Image = '';
+    let currentUser = null;
+    let currentUserDisplayName = '';
+
+    const USER_DISPLAY_MAP = {
+      'thedatazero': 'ผู้ดูแลระบบสูงสุด',
+      'admin': 'ผู้ดูแลระบบ',
+      'horn': 'เอ',
+      'monitor_msi': 'เอ๋',
+      'phachara': 'เซ็ต',
+      'dump': 'ดั้ม'
+    };
+
+    function getSafeDisplayName(raw) {
+      if (!raw) return '';
+      const key = String(raw).trim().toLowerCase();
+      return USER_DISPLAY_MAP[key] || String(raw).trim();
+    }
+
+    let currentPhotoFilter = ''; // '' | 'missing' | 'has'
+
+    function updateManageKpis(sourceRows) {
+      const rows = Array.isArray(sourceRows) ? sourceRows : allRows;
+      const total = rows.length;
+      let active = 0, broken = 0, missing = 0, photos = 0;
+      const comms = new Set();
+      rows.forEach(r => {
+        const s = (r.status || 'ใช้งานได้').trim();
+        if (s === 'ใช้งานได้') active++;
+        else if (s === 'ชำรุด') broken++;
+        else if (s === 'สูญหาย') missing++;
+        if (r.image && String(r.image).trim() !== '') photos++;
+        if (r.community) comms.add(r.community);
+      });
+
+      const fComm = document.getElementById('sheet-filter-comm')?.value || '';
+      const fType = document.getElementById('sheet-filter-type')?.value || '';
+
+      const elTotal = document.getElementById('kpi-total');
+      if (elTotal) elTotal.textContent = total.toLocaleString();
+      const elComm = document.getElementById('kpi-comm-count');
+      if (elComm) {
+        if (fType && fComm) {
+          elComm.textContent = `${fType} • ${fComm}`;
+        } else if (fType) {
+          elComm.textContent = `ประเภท: ${fType} (${comms.size} ชุมชน)`;
+        } else if (fComm) {
+          elComm.textContent = `ชุมชน: ${fComm}`;
+        } else {
+          elComm.textContent = `${comms.size || 10} ชุมชนในเขตเทศบาล`;
+        }
+      }
+      const elAct = document.getElementById('kpi-active');
+      if (elAct) elAct.textContent = active.toLocaleString();
+      const elBrk = document.getElementById('kpi-broken');
+      if (elBrk) elBrk.textContent = broken.toLocaleString();
+      const elMis = document.getElementById('kpi-missing');
+      if (elMis) elMis.textContent = missing.toLocaleString();
+      const elPho = document.getElementById('kpi-photos');
+      if (elPho) elPho.textContent = `${photos}/${total}`;
+      const elPhoSub = document.getElementById('kpi-photos-sub');
+      if (elPhoSub) {
+        const waitCount = total - photos;
+        if (currentPhotoFilter === 'missing') {
+          elPhoSub.textContent = `กำลังกรอง: รออัปโหลด ${waitCount} จุด (คลิกอีกทีเพื่อดูที่มีรูป)`;
+        } else if (currentPhotoFilter === 'has') {
+          elPhoSub.textContent = `กำลังกรอง: มีรูปแล้ว ${photos} จุด (คลิกอีกทีเพื่อแสดงทั้งหมด)`;
+        } else {
+          elPhoSub.textContent = `มีรูป ${photos} จุด • รออัปโหลด ${waitCount} จุด`;
+        }
+      }
+    }
+
+    function filterByKpiStatus(statusVal) {
+      if (statusVal === '') {
+        currentPhotoFilter = '';
+      }
+      const sel = document.getElementById('sheet-filter-stat');
+      if (sel) {
+        sel.value = statusVal;
+        renderGrid();
+      }
+      document.querySelectorAll('.kpi-strip .kpi-card').forEach(c => c.classList.remove('active-filter'));
+      if (statusVal === '') document.getElementById('kpi-card-all')?.classList.add('active-filter');
+      else if (statusVal === 'ใช้งานได้') document.getElementById('kpi-card-active')?.classList.add('active-filter');
+      else if (statusVal === 'ชำรุด') document.getElementById('kpi-card-broken')?.classList.add('active-filter');
+      else if (statusVal === 'สูญหาย') document.getElementById('kpi-card-missing')?.classList.add('active-filter');
+    }
+
+    function toggleKpiPhotoFilter() {
+      if (currentPhotoFilter === '') currentPhotoFilter = 'missing';
+      else if (currentPhotoFilter === 'missing') currentPhotoFilter = 'has';
+      else currentPhotoFilter = '';
+
+      document.querySelectorAll('.kpi-strip .kpi-card').forEach(c => c.classList.remove('active-filter'));
+      if (currentPhotoFilter !== '') {
+        document.getElementById('kpi-card-photos')?.classList.add('active-filter');
+      } else {
+        document.getElementById('kpi-card-all')?.classList.add('active-filter');
+      }
+      renderGrid();
+    }
+
+    function showToast(msg, isError = false) {
+      const el = document.getElementById('toast-msg');
+      el.textContent = msg;
+      el.style.background = isError ? '#dc3545' : '#198754';
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function initManageAuth() {
+      const token = localStorage.getItem('polemap_token');
+      if (!token) {
+        document.getElementById('login-gate').style.display = 'flex';
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/auth/verify`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success && json.user) {
+          currentUser = json.user;
+          currentUserDisplayName = json.name || getSafeDisplayName(json.user);
+          document.getElementById('current-user-label').textContent = `ผู้ใช้งาน: ${currentUserDisplayName}`;
+          document.getElementById('login-gate').style.display = 'none';
+          reloadSheetData();
+        } else {
+          document.getElementById('login-gate').style.display = 'flex';
+        }
+      } catch (e) {
+        document.getElementById('login-gate').style.display = 'flex';
+      }
+    }
+
+    async function submitManageLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const errEl = document.getElementById('login-err');
+      const btn = document.getElementById('btn-login-submit');
+
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'กำลังตรวจสอบ...';
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const json = await res.json();
+        if (json.success && json.token) {
+          localStorage.setItem('polemap_token', json.token);
+          localStorage.setItem('polemap_user', JSON.stringify(json.user));
+          currentUser = json.user.username;
+          currentUserDisplayName = json.user.name || getSafeDisplayName(json.user.username);
+          document.getElementById('current-user-label').textContent = `ผู้ใช้งาน: ${currentUserDisplayName}`;
+          document.getElementById('login-gate').style.display = 'none';
+          showToast(`ยินดีต้อนรับ ${currentUserDisplayName}`);
+          reloadSheetData();
+        } else {
+          errEl.textContent = json.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์พอร์ต 3406 ได้';
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'เข้าสู่ระบบ';
+      }
+    }
+
+    function logoutManage() {
+      localStorage.removeItem('polemap_token');
+      localStorage.removeItem('polemap_user');
+      currentUser = null;
+      document.getElementById('current-user-label').textContent = 'ยังไม่ได้เข้าสู่ระบบ';
+      document.getElementById('login-gate').style.display = 'flex';
+    }
+
+    async function reloadSheetData() {
+      const tbody = document.getElementById('grid-tbody');
+      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 40px; color:#9aa0a6;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดข้อมูลทั้ง 378 จุดติดตั้ง...</td></tr>';
+      try {
+        const res = await fetch(`${API_BASE}/poles`);
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          allRows = json.data;
+          updateManageKpis();
+          populateCommunityFilter();
+          renderGrid();
+          document.getElementById('footer-summary').textContent = `เชื่อมต่อสำเร็จ • ข้อมูลทั้งหมด ${allRows.length} จุดติดตั้ง`;
+        } else {
+          tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 40px; color:var(--danger);">เกิดข้อผิดพลาด: ${json.error || 'Server Error'}</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding: 40px; color:var(--danger);">ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ที่ ${API_BASE} ได้</td></tr>`;
+      }
+    }
+
+    function populateCommunityFilter() {
+      const sel = document.getElementById('sheet-filter-comm');
+      const dl = document.getElementById('community-datalist');
+      const curVal = sel.value;
+      const comms = new Set();
+      allRows.forEach(r => { if (r.community) comms.add(r.community); });
+      sel.innerHTML = '<option value="">ชุมชน: ทั้งหมด</option>';
+      dl.innerHTML = '';
+      Array.from(comms).sort().forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+
+        const dOpt = document.createElement('option');
+        dOpt.value = c;
+        dl.appendChild(dOpt);
+      });
+      sel.value = curVal;
+    }
+
+    function renderGrid() {
+      const tbody = document.getElementById('grid-tbody');
+      const q = document.getElementById('sheet-search').value.toLowerCase().trim();
+      const fComm = document.getElementById('sheet-filter-comm').value;
+      const fType = document.getElementById('sheet-filter-type').value;
+      const fStat = document.getElementById('sheet-filter-stat').value;
+
+      const kpiBaseRows = allRows.filter(r => {
+        if (fComm && r.community !== fComm) return false;
+        if (fType && (r.device_type || 'ลำโพง') !== fType) return false;
+        if (q) {
+          const str = `${r.name} ${r.community} ${r.device_type} ${r.location_type} ${r.note} ${r.coordinates} ${r.created_by} ${r.updated_by} ${r.created_by_name || ''} ${r.updated_by_name || ''}`.toLowerCase();
+          if (!str.includes(q)) return false;
+        }
+        return true;
+      });
+
+      updateManageKpis(kpiBaseRows);
+
+      const filtered = kpiBaseRows.filter(r => {
+        if (fStat && (r.status || 'ใช้งานได้') !== fStat) return false;
+        const hasImg = !!(r.image && String(r.image).trim() !== '');
+        if (currentPhotoFilter === 'missing' && hasImg) return false;
+        if (currentPhotoFilter === 'has' && !hasImg) return false;
+        return true;
+      });
+
+      document.getElementById('status-counter').textContent = `แสดง ${filtered.length} จาก ${allRows.length} รายการ`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 30px; color:#9aa0a6;">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</td></tr>';
+        return;
+      }
+
+      const locOptions = ['เสาไฟ', 'เสาอื่นๆ', 'อาคาร/ห้องควบคุม', 'ศาลาชุมชน', 'อื่นๆ'];
+
+      tbody.innerHTML = filtered.map((r, idx) => {
+        const imgSrc = r.image ? (r.image.startsWith('http') ? r.image : (UPLOAD_BASE + r.image.replace(/^\//, ''))) : '';
+        const thumbHtml = imgSrc
+          ? `<div class="photo-cell-group">
+               <img src="${imgSrc}" class="cell-thumb" title="คลิกเพื่อดูรูปขนาดใหญ่" onclick="openPhotoAction('${r.id}', '${imgSrc}')" onerror="this.outerHTML='<div class=\\'cell-thumb-empty\\' title=\\'คลิกเพื่ออัปโหลดรูปภาพ\\' onclick=\\'triggerPhotoUpload(&quot;${r.id}&quot;)\\'><i class=\\'fa-solid fa-camera\\'></i></div>'" />
+               <div class="photo-btn-stack">
+                 <button type="button" class="btn-photo-mini" onclick="triggerPhotoUpload('${r.id}')" title="อัปโหลดรูปใหม่แทนที่รูปเดิม"><i class="fa-solid fa-upload"></i> แก้รูป</button>
+                 <button type="button" class="btn-photo-mini del" onclick="deletePhotoOnly('${r.id}', '${escapeHtml(r.name)}')" title="ลบรูปภาพออกจากจุดนี้"><i class="fa-solid fa-trash-can"></i> ลบรูป</button>
+               </div>
+             </div>`
+          : `<div class="photo-cell-group">
+               <div class="cell-thumb-empty" title="ยังไม่มีรูปภาพ คลิกเพื่ออัปโหลด" onclick="triggerPhotoUpload('${r.id}')"><i class="fa-solid fa-camera"></i></div>
+               <div class="photo-btn-stack">
+                 <button type="button" class="btn-photo-mini" onclick="triggerPhotoUpload('${r.id}')"><i class="fa-solid fa-upload"></i> อัปโหลด</button>
+               </div>
+             </div>`;
+
+        let curLoc = r.location_type || 'เสาไฟ';
+        if (curLoc === 'เสา (Pole)' || curLoc === 'เสาเทศบาล') curLoc = 'เสาไฟ';
+        else if (curLoc.includes('อาคาร') || curLoc.includes('ตู้ควบคุม')) curLoc = 'อาคาร/ห้องควบคุม';
+
+        const locSelectHtml = locOptions.map(o => `<option value="${o}" ${curLoc === o ? 'selected' : ''}>${o}</option>`).join('');
+
+        const createdBy = escapeHtml(r.created_by_name || getSafeDisplayName(r.created_by || 'เจ้าหน้าที่'));
+        const createdAt = escapeHtml(r.created_at || '-');
+        const updatedBy = escapeHtml(r.updated_by ? (r.updated_by_name || getSafeDisplayName(r.updated_by)) : '');
+        const updatedAt = escapeHtml(r.updated_at || '');
+
+        const createdHtml = `
+          <div class="audit-box">
+            <span class="audit-user"><i class="fa-solid fa-user-plus" style="font-size:10px; color:#198754;"></i> ${createdBy}</span>
+            <span class="audit-time">${createdAt}</span>
+          </div>
+        `;
+
+        const updatedHtml = updatedBy
+          ? `<div class="audit-box">
+               <span class="audit-user edited"><i class="fa-solid fa-pen" style="font-size:10px;"></i> ${updatedBy}</span>
+               <span class="audit-time">${updatedAt}</span>
+             </div>`
+          : `<div class="audit-box" style="color:#cbd5e1;">- ยังไม่เคยแก้ไข -</div>`;
+
+        return `
+          <tr id="row-${r.id}">
+            <td class="col-idx">${idx + 1}</td>
+            <td>${thumbHtml}</td>
+            <td>
+              <select class="cell-select" id="type-${r.id}">
+                <option value="ลำโพง" ${r.device_type === 'ลำโพง' ? 'selected' : ''}>ลำโพง</option>
+                <option value="ลำโพงไร้สาย" ${r.device_type === 'ลำโพงไร้สาย' ? 'selected' : ''}>ลำโพงไร้สาย</option>
+                <option value="กล้องวงจรปิด" ${r.device_type === 'กล้องวงจรปิด' ? 'selected' : ''}>กล้องวงจรปิด</option>
+                <option value="เครื่องขยายเสียง" ${r.device_type === 'เครื่องขยายเสียง' ? 'selected' : ''}>เครื่องขยายเสียง</option>
+                <option value="เซิฟเวอร์วงจรปิด" ${r.device_type === 'เซิฟเวอร์วงจรปิด' ? 'selected' : ''}>เซิฟเวอร์วงจรปิด</option>
+              </select>
+            </td>
+            <td><input type="text" class="cell-input" id="name-${r.id}" value="${escapeHtml(r.name)}" /></td>
+            <td><input type="text" class="cell-input" id="comm-${r.id}" list="community-datalist" value="${escapeHtml(r.community)}" /></td>
+            <td>
+              <select class="cell-select" id="loc-${r.id}">
+                ${locSelectHtml}
+              </select>
+            </td>
+            <td>
+              <select class="cell-select" id="stat-${r.id}">
+                <option value="ใช้งานได้" ${r.status === 'ใช้งานได้' ? 'selected' : ''}>ใช้งานได้</option>
+                <option value="ชำรุด" ${r.status === 'ชำรุด' ? 'selected' : ''}>ชำรุด</option>
+                <option value="สูญหาย" ${r.status === 'สูญหาย' ? 'selected' : ''}>สูญหาย</option>
+              </select>
+            </td>
+            <td><input type="text" class="cell-input" style="font-family:monospace; font-size:12px;" id="coords-${r.id}" value="${escapeHtml(r.coordinates || '')}" /></td>
+            <td><input type="text" class="cell-input" id="note-${r.id}" value="${escapeHtml(r.note || '')}" placeholder="-" /></td>
+            <td id="created-cell-${r.id}">${createdHtml}</td>
+            <td id="updated-cell-${r.id}">${updatedHtml}</td>
+            <td style="text-align:center;">
+              <button class="btn-row-save" onclick="saveRow('${r.id}')" title="บันทึกการแก้ไขแถวนี้"><i class="fa-solid fa-floppy-disk"></i></button>
+              <button class="btn-row-del" onclick="deleteRow('${r.id}', '${escapeHtml(r.name)}')" title="ลบจุดติดตั้งนี้"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function saveRow(id) {
+      if (!currentUser) {
+        document.getElementById('login-gate').style.display = 'flex';
+        return;
+      }
+      const name = document.getElementById(`name-${id}`).value.trim();
+      const community = document.getElementById(`comm-${id}`).value.trim();
+      const device_type = document.getElementById(`type-${id}`).value;
+      const location_type = document.getElementById(`loc-${id}`).value;
+      const status = document.getElementById(`stat-${id}`).value;
+      const coordinates = document.getElementById(`coords-${id}`).value.trim();
+      const note = document.getElementById(`note-${id}`).value.trim();
+
+      if (!name || !coordinates) {
+        showToast('กรุณากรอกชื่อจุดติดตั้งและพิกัด GPS', true);
+        return;
+      }
+
+      const token = localStorage.getItem('polemap_token') || '';
+      try {
+        const res = await fetch(`${API_BASE}/poles/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name,
+            community,
+            device_type,
+            location_type,
+            status,
+            coordinates,
+            note,
+            updated_by: currentUser
+          })
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          const idx = allRows.findIndex(r => r.id === id);
+          if (idx !== -1) allRows[idx] = json.data;
+          updateManageKpis();
+          const uCell = document.getElementById(`updated-cell-${id}`);
+          const safeEditor = json.data.updated_by_name || getSafeDisplayName(json.data.updated_by);
+          if (uCell) {
+            uCell.innerHTML = `
+              <div class="audit-box">
+                <span class="audit-user edited"><i class="fa-solid fa-pen" style="font-size:10px;"></i> ${escapeHtml(safeEditor)}</span>
+                <span class="audit-time">${escapeHtml(json.data.updated_at)}</span>
+              </div>
+            `;
+          }
+          showToast(`บันทึก "${name}" สำเร็จ (แก้ไขโดย ${safeEditor})`);
+        } else {
+          showToast(json.error || 'บันทึกไม่สำเร็จ', true);
+        }
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ', true);
+      }
+    }
+
+    async function deletePhotoOnly(id, name) {
+      if (!currentUser) {
+        document.getElementById('login-gate').style.display = 'flex';
+        return;
+      }
+      if (!confirm(`ยืนยันการลบรูปภาพของจุด "${name}" ?\n(ไฟล์รูปภาพจะถูกลบออกจากดิสก์ทันที แต่ข้อมูลพิกัดและชื่อเสายังคงอยู่)`)) return;
+
+      const token = localStorage.getItem('polemap_token') || '';
+      try {
+        const res = await fetch(`${API_BASE}/poles/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            image: '',
+            removeImage: true,
+            updated_by: currentUser
+          })
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          const idx = allRows.findIndex(r => r.id === id);
+          if (idx !== -1) allRows[idx] = json.data;
+          updateManageKpis();
+          renderGrid();
+          showToast(`ลบรูปภาพของ "${name}" เรียบร้อยแล้ว`);
+        } else {
+          showToast(json.error || 'ลบรูปภาพไม่สำเร็จ', true);
+        }
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาดในการลบรูปภาพ', true);
+      }
+    }
+
+    async function deleteCurrentModalPhoto() {
+      if (!currentModalRowId) return;
+      const targetId = currentModalRowId;
+      const rowObj = allRows.find(r => r.id === targetId);
+      closeImageModal();
+      await deletePhotoOnly(targetId, rowObj ? rowObj.name : targetId);
+    }
+
+    async function deleteRow(id, name) {
+      if (!currentUser) {
+        document.getElementById('login-gate').style.display = 'flex';
+        return;
+      }
+      if (!confirm(`ยืนยันการลบจุดติดตั้ง "${name}" ทั้งแถว?\n(ข้อมูลและไฟล์รูปภาพของจุดนี้จะถูกลบออกจากดิสก์ทันที)`)) return;
+
+      const token = localStorage.getItem('polemap_token') || '';
+      try {
+        const res = await fetch(`${API_BASE}/poles/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const json = await res.json();
+        if (json.success) {
+          allRows = allRows.filter(r => r.id !== id);
+          updateManageKpis();
+          renderGrid();
+          showToast(`ลบ "${name}" เรียบร้อยแล้ว`);
+        } else {
+          showToast(json.error || 'ลบไม่สำเร็จ', true);
+        }
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาดในการลบ', true);
+      }
+    }
+
+    function openPhotoAction(id, imgSrc) {
+      currentModalRowId = id;
+      document.getElementById('zoom-img').src = imgSrc;
+      document.getElementById('img-modal').style.display = 'flex';
+    }
+
+    function closeImageModal() {
+      document.getElementById('img-modal').style.display = 'none';
+      document.getElementById('zoom-img').src = '';
+      currentModalRowId = null;
+    }
+
+    function replaceCurrentModalPhoto() {
+      if (!currentModalRowId) return;
+      const targetId = currentModalRowId;
+      closeImageModal();
+      triggerPhotoUpload(targetId);
+    }
+
+    function triggerPhotoUpload(id) {
+      activeUploadRowId = id;
+      const input = document.getElementById('cell-photo-input');
+      input.value = '';
+      input.click();
+    }
+
+    function compressImageFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const MAX_SIZE = 1024;
+            let w = img.width;
+            let h = img.height;
+            if (w > h && w > MAX_SIZE) {
+              h = Math.round((h * MAX_SIZE) / w);
+              w = MAX_SIZE;
+            } else if (h > MAX_SIZE) {
+              w = Math.round((w * MAX_SIZE) / h);
+              h = MAX_SIZE;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.70));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleCellPhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file || !activeUploadRowId) return;
+      const id = activeUploadRowId;
+      const token = localStorage.getItem('polemap_token') || '';
+
+      try {
+        showToast('กำลังย่อขนาดภาพและอัปโหลด...');
+        const base64 = await compressImageFile(file);
+        const res = await fetch(`${API_BASE}/poles/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            image: base64,
+            updated_by: currentUser || 'admin'
+          })
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          const idx = allRows.findIndex(r => r.id === id);
+          if (idx !== -1) allRows[idx] = json.data;
+          updateManageKpis();
+          renderGrid();
+          showToast('เปลี่ยนรูปภาพและลบไฟล์ภาพเก่าเรียบร้อยแล้ว');
+        } else {
+          showToast(json.error || 'อัปโหลดรูปไม่สำเร็จ', true);
+        }
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาดในการย่อและอัปโหลดรูปภาพ', true);
+      }
+    }
+
+    function openAddRowModal() {
+      if (!currentUser) {
+        document.getElementById('login-gate').style.display = 'flex';
+        return;
+      }
+      newRowBase64Image = '';
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-coords').value = '';
+      document.getElementById('new-note').value = '';
+      document.getElementById('new-photo-file').value = '';
+      document.getElementById('new-photo-preview').textContent = '';
+      document.getElementById('add-modal').style.display = 'flex';
+    }
+
+    async function handleNewModalPhoto(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      newRowBase64Image = await compressImageFile(file);
+      document.getElementById('new-photo-preview').textContent = 'ย่อขนาดภาพพร้อมบันทึกแล้ว (1024px JPEG)';
+    }
+
+    function fetchCurrentGps() {
+      if (!navigator.geolocation) {
+        showToast('เบราว์เซอร์ไม่รองรับ GPS', true);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          document.getElementById('new-coords').value = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
+          showToast('ดึงพิกัด GPS สำเร็จ');
+        },
+        () => showToast('ไม่สามารถดึงพิกัดได้', true),
+        { enableHighAccuracy: true }
+      );
+    }
+
+    async function submitNewRow() {
+      const name = document.getElementById('new-name').value.trim();
+      const community = document.getElementById('new-community').value.trim() || 'ไม่ระบุชุมชน';
+      const device_type = document.getElementById('new-type').value;
+      const location_type = document.getElementById('new-loc').value;
+      const status = document.getElementById('new-status').value;
+      const coordinates = document.getElementById('new-coords').value.trim();
+      const note = document.getElementById('new-note').value.trim();
+
+      if (!name || !coordinates) {
+        showToast('กรุณากรอกชื่อจุดติดตั้งและพิกัด GPS', true);
+        return;
+      }
+
+      const token = localStorage.getItem('polemap_token') || '';
+      try {
+        const res = await fetch(`${API_BASE}/poles`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            name,
+            community,
+            device_type,
+            location_type,
+            status,
+            coordinates,
+            note,
+            image: newRowBase64Image,
+            created_by: currentUser || 'admin'
+          })
+        });
+        const json = await res.json();
+        if (json.success && json.data) {
+          allRows.unshift(json.data);
+          updateManageKpis();
+          populateCommunityFilter();
+          renderGrid();
+          document.getElementById('add-modal').style.display = 'none';
+          const safeCreator = json.data.created_by_name || getSafeDisplayName(json.data.created_by);
+          showToast(`เพิ่มจุดติดตั้ง "${name}" สำเร็จ (ผู้ลงข้อมูล: ${safeCreator})`);
+        } else {
+          showToast(json.error || 'เพิ่มข้อมูลไม่สำเร็จ', true);
+        }
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาดในการบันทึก', true);
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeImageModal();
+        document.getElementById('add-modal').style.display = 'none';
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', initManageAuth);
+  </script>
+</body>
+</html>

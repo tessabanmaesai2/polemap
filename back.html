@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบจัดการบัญชีผู้ใช้งานและเรดาร์ความปลอดภัย — POLE MAP แม่สาย</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --bg-panel: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-hover: #26354d;
+      --border: rgba(148, 163, 184, 0.16);
+      --border-strong: rgba(148, 163, 184, 0.28);
+      --text-main: #f8fafc;
+      --text-sub: #cbd5e1;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #0ea5e9;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #8b5cf6;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.7);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Sarabun', 'Kanit', sans-serif;
+      background: radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.12), transparent 40%),
+                  radial-gradient(circle at 85% 80%, rgba(139, 92, 246, 0.10), transparent 40%),
+                  var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Kanit', sans-serif;
+    }
+
+    /* ---------------- LOGIN GATE OVERLAY ---------------- */
+    .auth-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: radial-gradient(circle at 50% 30%, #1e293b 0%, #070b14 75%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .auth-gate.hidden { display: none; }
+
+    .auth-card {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(59, 130, 246, 0.15);
+      backdrop-filter: blur(16px);
+    }
+
+    .auth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Kanit', sans-serif;
+      margin-bottom: 16px;
+    }
+
+    .auth-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .auth-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* ---------------- TOPBAR ---------------- */
+    .topbar {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-text p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .port-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(14, 165, 233, 0.15);
+      border: 1px solid rgba(14, 165, 233, 0.4);
+      color: #38bdf8;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .user-pill .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+
+    /* ---------------- TABS ---------------- */
+    .container {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 20px 28px 60px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 22px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.6);
+      color: var(--text-sub);
+      font-family: 'Kanit', sans-serif;
+      font-size: 14.5px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover {
+      background: rgba(51, 65, 85, 0.7);
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-color: #3b82f6;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    .tab-btn.active-radar {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+      border-color: #ef4444;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ---------------- KPI STATS ROW ---------------- */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .kpi-info .label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      font-family: 'Kanit', sans-serif;
+    }
+
+    .kpi-info .value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: 'Kanit', sans-serif;
+      line-height: 1.1;
+    }
+
+    .kpi-info .sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .kpi-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    /* ---------------- PANELS & TABLES ---------------- */
+    .panel {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      background: rgba(30, 41, 59, 0.45);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 600;
+      font-family: 'Kanit', sans-serif;
+      color: #fff;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      position: relative;
+      min-width: 260px;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fff;
+      font-family: inherit;
+      font-size: 13.5px;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      padding: 13px 18px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+      font-size: 13.5px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    tr:hover td {
+      background: rgba(30, 41, 59, 0.45);
+    }
+
+    /* ---------------- BADGES ---------------- */
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .role-superadmin {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .role-admin {
+      background: rgba(139, 92, 246, 0.16);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.35);
+    }
+
+    .role-staff {
+      background: rgba(14, 165, 233, 0.16);
+      color: #7dd3fc;
+      border: 1px solid rgba(14, 165, 233, 0.35);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .status-active {
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-disabled {
+      background: rgba(239, 68, 68, 0.14);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .credit-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #93c5fd;
+      font-family: 'Kanit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .locked-master-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.38);
+      color: #fcd34d;
+      font-family: 'Kanit', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ---------------- BUTTONS ---------------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-sm {
+      padding: 6px 11px;
+      font-size: 12px;
+      border-radius: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+      border-color: #3b82f6;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+
+    .btn-success {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #fff;
+      border-color: #10b981;
+    }
+    .btn-success:hover { background: #047857; }
+
+    .btn-warning {
+      background: rgba(245, 158, 11, 0.16);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+    .btn-warning:hover { background: rgba(245, 158, 11, 0.28); }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+
+    .btn-outline {
+      background: rgba(30, 41, 59, 0.75);
+      color: var(--text-sub);
+      border-color: var(--border-strong);
+    }
+    .btn-outline:hover {
+      background: rgba(51, 65, 85, 0.9);
+      color: #fff;
+    }
+
+    .action-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    /* ---------------- FORMS & MODALS ---------------- */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-family: 'Kanit', sans-serif;
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-strong);
+      background: rgba(7, 11, 20, 0.85);
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      background: rgba(3, 7, 18, 0.8);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.show { display: flex; }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      background: #0f172a;
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+      animation: modalPop 0.2s ease-out;
+    }
+
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.95) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 18px 22px;
+      background: rgba(30, 41, 59, 0.6);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+    .modal-body { padding: 22px; }
+    .modal-footer {
+      padding: 14px 22px;
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* ---------------- TOAST ---------------- */
+    .toast-wrap {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast-msg {
+      background: #1e293b;
+      border-left: 4px solid var(--primary);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 10px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+      font-size: 13.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: modalPop 0.2s ease-out;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+
+  <!-- ================= SUPERADMIN LOGIN GATE ================= -->
+  <div class="auth-gate" id="authGate">
+    <div class="auth-card">
+      <div class="auth-badge">
+        <i class="fa-solid fa-shield-halved"></i> RESTRICTED AREA — SUPER ADMIN ONLY
+      </div>
+      <div class="auth-title font-heading">ศูนย์จัดการไอดีและความปลอดภัย</div>
+      <div class="auth-desc">POLE MAP แม่สาย • ระบบจัดการบัญชีเจ้าหน้าที่และเรดาร์ตรวจจับภัยคุกคาม (DEC-026)</div>
+
+      <form id="loginForm" onsubmit="handleSuperLogin(event)">
+        <div class="form-group">
+          <label class="form-label">ชื่อผู้ใช้งาน (Username)</label>
+          <input type="text" id="loginUser" class="form-control" placeholder="กรอกชื่อผู้ใช้งาน..." required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">รหัสผ่าน (Password)</label>
+          <input type="password" id="loginPass" class="form-control" placeholder="กรอกรหัสผ่าน..." required autocomplete="current-password">
+        </div>
+        <div id="loginError" style="display:none; color:#fca5a5; background:rgba(239,68,68,0.14); border:1px solid rgba(239,68,68,0.35); padding:10px 12px; border-radius:8px; font-size:13px; margin-bottom:14px;"></div>
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; font-size:15px;" id="btnSubmitLogin">
+          <i class="fa-solid fa-unlock-keyhole"></i> เข้าสู่ระบบจัดการหลังบ้าน (/back)
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= TOPBAR ================= -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-user-shield"></i></div>
+      <div class="brand-text">
+        <h1>
+          POLE MAP : SECURITY &amp; USER COCKPIT
+          <span class="port-pill">PORT 3406</span>
+        </h1>
+        <p>ศูนย์จัดการบัญชีไอดีเจ้าหน้าที่ ผลงานการสำรวจ และเรดาร์สกัดกั้นภัยคุกคาม เทศบาลตำบลแม่สาย</p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <div class="user-pill">
+        <span class="dot"></span>
+        <span>ผู้ดูแล: <strong id="activeAdminName">Super Admin</strong></span>
+      </div>
+      <a href="/polemap/" id="linkMap" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-map-location-dot"></i> หน้าแผนที่หลัก
+      </a>
+      <a href="/polemap/manage" id="linkManage" class="btn btn-outline btn-sm">
+        <i class="fa-solid fa-table-list"></i> ตารางจัดการจุดติดตั้ง
+      </a>
+      <button class="btn btn-danger btn-sm" onclick="logoutSuperAdmin()">
+        <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="container">
+
+    <!-- NAVIGATION TABS -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" id="tabBtnUsers" onclick="switchTab('users')">
+        <i class="fa-solid fa-users-gear"></i> บัญชีและไอดีผู้ใช้งาน (User Accounts &amp; Survey Credit)
+      </button>
+      <button class="tab-btn" id="tabBtnSecurity" onclick="switchTab('security')">
+        <i class="fa-solid fa-satellite-dish"></i> เรดาร์สกัดกั้นภัยคุกคาม (Security Radar DEC-026)
+      </button>
+    </div>
+
+    <!-- ================= TAB 1: USER MANAGEMENT ================= -->
+    <section class="tab-pane active" id="paneUsers">
+
+      <!-- KPI ROW -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">บัญชีผู้ใช้งานทั้งหมด</div>
+            <div class="value" id="kpiTotalUsers" style="color:#60a5fa;">6</div>
+            <div class="sub">Superadmin (ล็อกถาวร) + เจ้าหน้าที่ 5 บัญชี</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(59,130,246,0.15); color:#60a5fa;">
+            <i class="fa-solid fa-users"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">จุดติดตั้งในระบบทั้งหมด</div>
+            <div class="value" id="kpiTotalPoles" style="color:#34d399;">378</div>
+            <div class="sub">10 ชุมชนในเขตเทศบาลตำบลแม่สาย</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(16,185,129,0.15); color:#34d399;">
+            <i class="fa-solid fa-tower-broadcast"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">สำรวจมากที่สุด (Top Surveyor)</div>
+            <div class="value" id="kpiTopSurveyor" style="color:#c4b5fd; font-size:21px;">dump (220 จุด)</div>
+            <div class="sub" id="kpiSecondSurveyor">horn (84 จุด) • phachara (74 จุด)</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(139,92,246,0.15); color:#c4b5fd;">
+            <i class="fa-solid fa-medal"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">มาตรฐานการเข้ารหัสรหัสผ่าน</div>
+            <div class="value" style="color:#fbbf24; font-size:20px;">PBKDF2-SHA512</div>
+            <div class="sub">Salted 10,000 Iterations + พ.ศ. Audit</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;">
+            <i class="fa-solid fa-key"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS TABLE PANEL -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-id-card-clip" style="color:#3b82f6;"></i>
+            ตารางจัดการไอดีเจ้าหน้าที่และสิทธิ์การเข้าถึง (เพิ่ม / แก้ไขไอดี / ตั้งชื่อ / เปลี่ยนรหัสผ่าน / ลบไอดี)
+          </div>
+
+          <div class="toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="userSearchInput" placeholder="ค้นหาไอดี, ชื่อผู้ใช้งาน, ชุมชนที่สำรวจ..." oninput="renderUsersTable()">
+            </div>
+            <button class="btn btn-outline" onclick="loadUsers()">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+            <button class="btn btn-success" onclick="openAddUserModal()">
+              <i class="fa-solid fa-user-plus"></i> เพิ่มไอดีผู้ใช้งานใหม่
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:55px;">ลำดับ</th>
+                <th>ไอดีผู้ใช้งาน (Username)</th>
+                <th>ชื่อ-นามสกุล / ตำแหน่ง</th>
+                <th>ระดับสิทธิ์ (Role)</th>
+                <th>ผลงานสำรวจครั้งแรก (ผู้สร้าง)</th>
+                <th>จำนวนครั้งที่แก้ไข</th>
+                <th>เข้าใช้งานล่าสุด (พ.ศ.)</th>
+                <th>สถานะบัญชี</th>
+                <th style="text-align:right;">การจัดการไอดี (ตั้งค่า / แก้ไข / รหัสผ่าน / ลบ)</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: SECURITY RADAR (DEC-026) ================= -->
+    <section class="tab-pane" id="paneSecurity">
+
+      <!-- SECURITY KPI ROW -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">เหตุการณ์ทั้งหมด (Total Logs)</div>
+            <div class="value" id="secStatTotal" style="color:#f8fafc;">0</div>
+            <div class="sub">บันทึกย้อนหลังสูงสุด 500 รายการ</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(148,163,184,0.14); color:#cbd5e1;">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">ทราฟฟิกปกติ (Normal Traffic)</div>
+            <div class="value" id="secStatInfo" style="color:#10b981;">0</div>
+            <div class="sub">คำขอที่ผ่านการตรวจสอบปกติ</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(16,185,129,0.14); color:#10b981;">
+            <i class="fa-solid fa-shield-check"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">เฝ้าระวัง / สแกนบอท (Warn / Bots)</div>
+            <div class="value" id="secStatWarn" style="color:#f59e0b;">0</div>
+            <div class="sub">ล็อกอินผิดพลาด / บอทสแกนพอร์ต</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(245,158,11,0.14); color:#f59e0b;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-info">
+            <div class="label">สกัดกั้นการโจมตี (Blocked Attacks)</div>
+            <div class="value" id="secStatCrit" style="color:#ef4444;">0</div>
+            <div class="sub">SQLi / XSS / Path Traversal / Brute-Force</div>
+          </div>
+          <div class="kpi-icon" style="background:rgba(239,68,68,0.14); color:#ef4444;">
+            <i class="fa-solid fa-skull-crossbones"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- BANNED IP ALERT BOX -->
+      <div id="secBannedBox" style="display:none; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4); border-radius:14px; padding:16px 20px; margin-bottom:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+          <div style="color:#fca5a5; font-weight:600; font-family:'Kanit',sans-serif;">
+            <i class="fa-solid fa-ban"></i> รายการ IP ที่ถูกแบนอัตโนมัติ (Anti-Brute Force Lockout)
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="unbanIp('')">
+            <i class="fa-solid fa-unlock"></i> ปลดแบนทั้งหมด
+          </button>
+        </div>
+        <div id="secBannedList" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+      </div>
+
+      <!-- SECURITY RADAR TABLE PANEL -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-radar" style="color:#ef4444;"></i>
+            บันทึกการตรวจจับและสกัดกั้นภัยคุกคามแบบเรียลไทม์ (Real-time Security Audit Logs — พ.ศ.)
+          </div>
+
+          <div class="toolbar">
+            <button class="btn btn-sm sec-filter-btn active" id="secFilter-ALL" onclick="setSecFilter('ALL')" style="background:#3b82f6; color:#fff;">ทั้งหมด</button>
+            <button class="btn btn-outline btn-sm sec-filter-btn" id="secFilter-CRITICAL" onclick="setSecFilter('CRITICAL')">CRITICAL</button>
+            <button class="btn btn-outline btn-sm sec-filter-btn" id="secFilter-WARN" onclick="setSecFilter('WARN')">WARN</button>
+            <button class="btn btn-outline btn-sm sec-filter-btn" id="secFilter-INFO" onclick="setSecFilter('INFO')">INFO</button>
+
+            <div class="search-box" style="min-width:220px;">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="secSearchInput" placeholder="ค้นหา IP, Path, สาเหตุ..." oninput="renderSecurityTable()">
+            </div>
+
+            <button class="btn btn-outline btn-sm" onclick="loadSecurityLogs()">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="exportSecurityLogs()">
+              <i class="fa-solid fa-download"></i> Export JSON
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="clearSecurityLogs()">
+              <i class="fa-solid fa-trash-can"></i> ล้างประวัติ
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>เวลา (พ.ศ.)</th>
+                <th>ระดับภัยคุกคาม</th>
+                <th>IP Address</th>
+                <th>Method</th>
+                <th>Target Path</th>
+                <th>สถานะ</th>
+                <th>สาเหตุ / การตรวจจับ</th>
+                <th>User-Agent</th>
+              </tr>
+            </thead>
+            <tbody id="secLogsBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= MODAL 1: ADD USER ================= -->
+  <div class="modal-backdrop" id="modalAddUser">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-plus" style="color:#10b981;"></i> เพิ่มไอดีผู้ใช้งานใหม่</h3>
+        <button class="modal-close" onclick="closeModal('modalAddUser')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="submitAddUser(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">ไอดีผู้ใช้งาน (Username) *</label>
+            <input type="text" id="addUsername" class="form-control" placeholder="กรอกไอดีผู้ใช้งาน (ภาษาอังกฤษหรือตัวเลข)..." required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่อผู้ใช้งาน / ตำแหน่ง (แสดงผลในระบบ) *</label>
+            <input type="text" id="addFullName" class="form-control" placeholder="กรอกชื่อ-นามสกุล หรือตำแหน่ง..." required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">รหัสผ่าน (Password) *</label>
+            <input type="password" id="addPassword" class="form-control" placeholder="อย่างน้อย 4 ตัวอักษร" required minlength="4">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ระดับสิทธิ์ (Role)</label>
+            <select id="addRole" class="form-control">
+              <option value="staff">STAFF — เจ้าหน้าที่ปฏิบัติการ / สำรวจภาคสนาม</option>
+              <option value="admin">ADMIN — ผู้ดูแลระบบ</option>
+              <option value="superadmin">SUPERADMIN — ผู้ดูแลระบบสูงสุด</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalAddUser')">ยกเลิก</button>
+          <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> บันทึกไอดีใหม่</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 2: EDIT USER (ID / NAME / ROLE / STATUS) ================= -->
+  <div class="modal-backdrop" id="modalEditUser">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-pen" style="color:#3b82f6;"></i> แก้ไขไอดีและตั้งค่าผู้ใช้งาน</h3>
+        <button class="modal-close" onclick="closeModal('modalEditUser')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="submitEditUser(event)">
+        <div class="modal-body">
+          <input type="hidden" id="editOriginalId">
+          <div class="form-group">
+            <label class="form-label">ไอดีผู้ใช้งาน (Username) *</label>
+            <input type="text" id="editUsername" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ชื่อผู้ใช้งาน / ตำแหน่ง *</label>
+            <input type="text" id="editFullName" class="form-control" placeholder="ระบุชื่อ-นามสกุล หรือชื่อเรียกเจ้าหน้าที่" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ระดับสิทธิ์ (Role)</label>
+            <select id="editRole" class="form-control">
+              <option value="staff">STAFF — เจ้าหน้าที่ปฏิบัติการ / สำรวจภาคสนาม</option>
+              <option value="admin">ADMIN — ผู้ดูแลระบบ</option>
+              <option value="superadmin">SUPERADMIN — ผู้ดูแลระบบสูงสุด</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">สถานะบัญชี</label>
+            <select id="editActive" class="form-control">
+              <option value="1">พร้อมใช้งาน (Active)</option>
+              <option value="0">ระงับการใช้งานชั่วคราว (Disabled)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">ตั้งรหัสผ่านใหม่พร้อมกัน (เว้นว่างไว้หากไม่ต้องการเปลี่ยน)</label>
+            <input type="password" id="editOptionalPass" class="form-control" placeholder="เว้นว่างไว้หากใช้รหัสผ่านเดิม">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalEditUser')">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> บันทึกการแก้ไข</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 3: CHANGE PASSWORD ================= -->
+  <div class="modal-backdrop" id="modalChangePassword">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-key" style="color:#f59e0b;"></i> เปลี่ยนรหัสผ่านผู้ใช้งาน</h3>
+        <button class="modal-close" onclick="closeModal('modalChangePassword')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="submitChangePassword(event)">
+        <div class="modal-body">
+          <input type="hidden" id="pwdUserId">
+          <div style="background:rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.3); padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:13.5px;">
+            กำลังเปลี่ยนรหัสผ่านของไอดี: <strong id="pwdUsernameDisplay" class="mono" style="color:#93c5fd;">-</strong>
+          </div>
+          <div class="form-group">
+            <label class="form-label">รหัสผ่านใหม่ (New Password) *</label>
+            <input type="password" id="newPasswordInput" class="form-control" placeholder="กรอกรหัสผ่านใหม่อย่างน้อย 4 ตัวอักษร" required minlength="4">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">ยืนยันรหัสผ่านใหม่ (Confirm Password) *</label>
+            <input type="password" id="confirmPasswordInput" class="form-control" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" required minlength="4">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalChangePassword')">ยกเลิก</button>
+          <button type="submit" class="btn btn-warning"><i class="fa-solid fa-check"></i> ยืนยันเปลี่ยนรหัสผ่าน</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script>
+    const isFileProtocol = window.location.protocol === 'file:';
+    const API_BASE = isFileProtocol
+      ? 'http://127.0.0.1:3406/polemap/api'
+      : (window.location.pathname.startsWith('/polemap') ? '/polemap/api' : '/api');
+
+    if (isFileProtocol) {
+      document.getElementById('linkMap').href = 'index.html';
+      document.getElementById('linkManage').href = 'manage.html';
+    }
+
+    // Default accounts (Row #1 is Locked Superadmin; Survey counts match Excel 100%: dump=220, horn=84, phachara=74, admin=0 survey / 4 edits)
+    const FALLBACK_USERS = [
+      {
+        id: 1,
+        username: 'superadmin',
+        name: 'ผู้ดูแลระบบสูงสุด (Master Key)',
+        role: 'superadmin',
+        is_master: true,
+        is_active: 1,
+        created_at: '17/02/2569 09:00:00',
+        last_login: '-',
+        survey_count: 0,
+        edit_count: 0,
+        last_survey_at: '-'
+      },
+      {
+        id: 2,
+        username: 'admin',
+        name: 'ผู้ดูแลระบบ',
+        role: 'admin',
+        is_master: false,
+        is_active: 1,
+        created_at: '17/02/2569 09:00:00',
+        last_login: '-',
+        survey_count: 0,
+        edit_count: 4,
+        last_survey_at: '-'
+      },
+      {
+        id: 3,
+        username: 'horn',
+        name: 'เอ',
+        role: 'staff',
+        is_master: false,
+        is_active: 1,
+        created_at: '17/02/2569 09:00:00',
+        last_login: '-',
+        survey_count: 84,
+        edit_count: 0,
+        last_survey_at: '17/02/2569 15:44:53'
+      },
+      {
+        id: 4,
+        username: 'monitor_msi',
+        name: 'เอ๋',
+        role: 'staff',
+        is_master: false,
+        is_active: 1,
+        created_at: '17/02/2569 09:00:00',
+        last_login: '-',
+        survey_count: 0,
+        edit_count: 0,
+        last_survey_at: '-'
+      },
+      {
+        id: 5,
+        username: 'phachara',
+        name: 'เซ็ต',
+        role: 'staff',
+        is_master: false,
+        is_active: 1,
+        created_at: '17/02/2569 09:00:00',
+        last_login: '-',
+        survey_count: 74,
+        edit_count: 0,
+        last_survey_at: '30/03/2569 14:16:11'
+      },
+      {
+        id: 6,
+        username: 'dump',
+        name: 'ดั้ม',
+        role: 'staff',
+        is_master: false,
+        is_active: 1,
+        created_at: '17/02/2569 09:00:00',
+        last_login: '-',
+        survey_count: 220,
+        edit_count: 0,
+        last_survey_at: '10/11/2569 13:27:28'
+      }
+    ];
+
+    let allUsers = [...FALLBACK_USERS];
+    let secAllLogs = [];
+    let secCurrentFilter = 'ALL';
+    let secTimer = null;
+
+    function showToast(msg, type = 'info') {
+      const wrap = document.getElementById('toastWrap');
+      const el = document.createElement('div');
+      el.className = 'toast-msg';
+      const color = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#3b82f6');
+      el.style.borderLeftColor = color;
+      el.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info')}" style="color:${color};"></i> <span>${escapeHtml(msg)}</span>`;
+      wrap.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function getAuthHeaders() {
+      const token = sessionStorage.getItem('polemap_back_token') || localStorage.getItem('polemap_token') || '';
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+      };
+    }
+
+    // ---------------- AUTHENTICATION GATE (DEC-027 & DEC-028) ----------------
+    async function handleSuperLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value.trim();
+      const errEl = document.getElementById('loginError');
+      const btn = document.getElementById('btnSubmitLogin');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, gate: 'back' })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        }
+        const role = String(data.user?.role || '').toLowerCase();
+        if (role !== 'superadmin' && role !== 'super admin' && !data.user?.is_master) {
+          throw new Error('ระดับ Admin ไม่มีสิทธิ์เข้าถึงห้องความปลอดภัยหลังบ้าน (เฉพาะผู้ถือ Master Key เท่านั้น)');
+        }
+        sessionStorage.setItem('polemap_back_token', data.token);
+        sessionStorage.setItem('polemap_back_user', JSON.stringify(data.user));
+        unlockCockpit(data.user);
+        showToast(`เข้าสู่ระบบสำเร็จ: ${data.user.name}`, 'success');
+      } catch (err) {
+        errEl.textContent = err.message || 'ไม่สามารถเข้าสู่ระบบได้';
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function unlockCockpit(user) {
+      document.getElementById('authGate').classList.add('hidden');
+      document.getElementById('activeAdminName').textContent = `${user.name || user.username} (${(user.role || 'admin').toUpperCase()})`;
+      loadUsers();
+      loadSecurityLogs();
+    }
+
+    function logoutSuperAdmin() {
+      sessionStorage.removeItem('polemap_back_token');
+      sessionStorage.removeItem('polemap_back_user');
+      document.getElementById('loginPass').value = '';
+      document.getElementById('authGate').classList.remove('hidden');
+      if (secTimer) clearInterval(secTimer);
+    }
+
+    // ---------------- TABS ----------------
+    function switchTab(tab) {
+      document.getElementById('tabBtnUsers').className = 'tab-btn' + (tab === 'users' ? ' active' : '');
+      document.getElementById('tabBtnSecurity').className = 'tab-btn' + (tab === 'security' ? ' active-radar' : '');
+      document.getElementById('paneUsers').className = 'tab-pane' + (tab === 'users' ? ' active' : '');
+      document.getElementById('paneSecurity').className = 'tab-pane' + (tab === 'security' ? ' active' : '');
+
+      if (tab === 'security') {
+        loadSecurityLogs();
+        if (!secTimer) secTimer = setInterval(loadSecurityLogs, 5000);
+      } else {
+        if (secTimer) { clearInterval(secTimer); secTimer = null; }
+        loadUsers();
+      }
+    }
+
+    // ---------------- USER MANAGEMENT ----------------
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/users`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.users || data.data)) {
+          allUsers = data.users || data.data;
+        }
+      } catch (err) {
+        console.warn('Using preloaded users fallback:', err.message);
+      }
+      updateUserKpis();
+      renderUsersTable();
+    }
+
+    function updateUserKpis() {
+      document.getElementById('kpiTotalUsers').textContent = allUsers.length;
+      const sorted = [...allUsers].filter(u => (u.survey_count || 0) > 0).sort((a, b) => (b.survey_count || 0) - (a.survey_count || 0));
+      if (sorted[0]) {
+        document.getElementById('kpiTopSurveyor').textContent = `${sorted[0].username} (${sorted[0].survey_count} จุด)`;
+      }
+      if (sorted.length > 1) {
+        document.getElementById('kpiSecondSurveyor').textContent = sorted.slice(1).map(u => `${u.username} (${u.survey_count} จุด)`).join(' • ');
+      }
+    }
+
+    function renderUsersTable() {
+      const tbody = document.getElementById('usersTableBody');
+      const q = (document.getElementById('userSearchInput').value || '').trim().toLowerCase();
+
+      const filtered = allUsers.filter(u => {
+        if (!q) return true;
+        return (
+          String(u.username || '').toLowerCase().includes(q) ||
+          String(u.name || u.full_name || '').toLowerCase().includes(q) ||
+          String(u.role || '').toLowerCase().includes(q)
+        );
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:36px; color:var(--text-muted);">ไม่พบบัญชีผู้ใช้งานที่ค้นหา</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map((u, idx) => {
+        const role = String(u.role || 'staff').toLowerCase();
+        const roleClass = role === 'superadmin' ? 'role-superadmin' : (role === 'admin' ? 'role-admin' : 'role-staff');
+        const roleLabel = role === 'superadmin' ? 'SUPERADMIN' : (role === 'admin' ? 'ADMIN' : 'STAFF');
+        const isActive = u.is_active !== 0 && u.is_active !== false;
+        const surveyCount = u.survey_count || 0;
+        const editCount = u.edit_count || 0;
+        const isMaster = Boolean(u.is_master || role === 'superadmin' || u.id === 1);
+
+        return `
+          <tr style="${isMaster ? 'background: rgba(245, 158, 11, 0.04);' : ''}">
+            <td class="mono" style="color:var(--text-muted);">${idx + 1}</td>
+            <td>
+              <div class="mono" style="font-weight:700; color:${isMaster ? '#fcd34d' : '#fff'}; font-size:14.5px;">
+                ${isMaster ? '<i class="fa-solid fa-crown" style="color:#f59e0b; margin-right:6px;"></i>' : ''}${escapeHtml(u.username)}
+              </div>
+            </td>
+            <td>
+              <div style="font-weight:600; color:#f1f5f9;">${escapeHtml(u.name || u.full_name || u.username)}</div>
+            </td>
+            <td>
+              <span class="role-badge ${roleClass}">${roleLabel}</span>
+            </td>
+            <td>
+              ${surveyCount > 0 ? `
+                <span class="credit-badge">
+                  <i class="fa-solid fa-location-dot"></i> สำรวจ ${surveyCount} จุด
+                </span>
+              ` : `
+                <span style="color:var(--text-muted); font-size:13px;">ไม่ได้ลงสำรวจ (0 จุด)</span>
+              `}
+            </td>
+            <td>
+              <span style="font-family:'Kanit',sans-serif; font-weight:600; color:${editCount > 0 ? '#fcd34d' : 'var(--text-muted)'};">
+                ${editCount > 0 ? `แก้ไข ${editCount} ครั้ง` : 'ยังไม่เคยแก้ไข'}
+              </span>
+            </td>
+            <td class="mono" style="font-size:12.5px; color:var(--text-sub);">
+              ${escapeHtml(u.last_login !== '-' ? u.last_login : (u.last_survey_at || '-'))}
+            </td>
+            <td>
+              <span class="status-pill ${isActive ? 'status-active' : 'status-disabled'}">
+                <i class="fa-solid ${isActive ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                ${isActive ? 'พร้อมใช้งาน' : 'ระงับชั่วคราว'}
+              </span>
+            </td>
+            <td style="text-align:right;">
+              ${isMaster ? `
+                <span class="locked-master-pill" title="บัญชีรากฐานของระบบ ล็อกถาวรเพื่อความปลอดภัยสูงสุด">
+                  <i class="fa-solid fa-lock"></i> บัญชีระบบ Master Key (ล็อกถาวร)
+                </span>
+              ` : `
+                <div class="action-group" style="justify-content:flex-end;">
+                  <button class="btn btn-primary btn-sm" onclick="openEditUserModal('${escapeHtml(u.username)}')" title="แก้ไขไอดี / ชื่อผู้ใช้งาน / สิทธิ์ / สถานะ">
+                    <i class="fa-solid fa-user-pen"></i> แก้ไขไอดี/ชื่อ
+                  </button>
+                  <button class="btn btn-warning btn-sm" onclick="openPasswordModal('${escapeHtml(u.username)}')" title="เปลี่ยนรหัสผ่าน">
+                    <i class="fa-solid fa-key"></i> รหัสผ่าน
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="confirmDeleteUser('${escapeHtml(u.username)}')" title="ลบบัญชีผู้ใช้งาน">
+                    <i class="fa-solid fa-trash-can"></i> ลบ
+                  </button>
+                </div>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // ---------------- MODALS: ADD / EDIT / PASSWORD / DELETE ----------------
+    function openModal(id) {
+      document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function openAddUserModal() {
+      document.getElementById('addUsername').value = '';
+      document.getElementById('addFullName').value = '';
+      document.getElementById('addPassword').value = '';
+      document.getElementById('addRole').value = 'staff';
+      openModal('modalAddUser');
+    }
+
+    async function submitAddUser(e) {
+      e.preventDefault();
+      const username = document.getElementById('addUsername').value.trim().toLowerCase();
+      const name = document.getElementById('addFullName').value.trim();
+      const password = document.getElementById('addPassword').value.trim();
+      const role = document.getElementById('addRole').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/users`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ username, name, password, role, is_active: 1 })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'ไม่สามารถเพิ่มผู้ใช้งานได้');
+
+        closeModal('modalAddUser');
+        showToast(`เพิ่มไอดี ${username} (${name}) เรียบร้อยแล้ว`, 'success');
+        await loadUsers();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openEditUserModal(username) {
+      const u = allUsers.find(item => item.username.toLowerCase() === username.toLowerCase());
+      if (!u) return;
+
+      document.getElementById('editOriginalId').value = u.username;
+      document.getElementById('editUsername').value = u.username;
+      document.getElementById('editUsername').disabled = Boolean(u.is_master);
+      document.getElementById('editFullName').value = u.name || u.full_name || '';
+      document.getElementById('editRole').value = (u.role || 'staff').toLowerCase();
+      document.getElementById('editActive').value = (u.is_active !== 0 && u.is_active !== false) ? '1' : '0';
+      document.getElementById('editOptionalPass').value = '';
+      openModal('modalEditUser');
+    }
+
+    async function submitEditUser(e) {
+      e.preventDefault();
+      const origId = document.getElementById('editOriginalId').value;
+      const username = document.getElementById('editUsername').value.trim().toLowerCase();
+      const name = document.getElementById('editFullName').value.trim();
+      const role = document.getElementById('editRole').value;
+      const is_active = document.getElementById('editActive').value === '1' ? 1 : 0;
+      const password = document.getElementById('editOptionalPass').value.trim();
+
+      try {
+        const payload = { username, name, role, is_active };
+        if (password) payload.password = password;
+
+        const res = await fetch(`${API_BASE}/superadmin/users/${encodeURIComponent(origId)}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'แก้ไขข้อมูลไม่สำเร็จ');
+
+        closeModal('modalEditUser');
+        showToast(`บันทึกการแก้ไขไอดี ${username} เรียบร้อยแล้ว`, 'success');
+        await loadUsers();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openPasswordModal(username) {
+      document.getElementById('pwdUserId').value = username;
+      document.getElementById('pwdUsernameDisplay').textContent = username;
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmPasswordInput').value = '';
+      openModal('modalChangePassword');
+    }
+
+    async function submitChangePassword(e) {
+      e.preventDefault();
+      const userId = document.getElementById('pwdUserId').value;
+      const newPass = document.getElementById('newPasswordInput').value.trim();
+      const confirmPass = document.getElementById('confirmPasswordInput').value.trim();
+
+      if (newPass !== confirmPass) {
+        return showToast('รหัสผ่านทั้งสองช่องไม่ตรงกัน', 'error');
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/users/${encodeURIComponent(userId)}/password`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ new_password: newPass })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'เปลี่ยนรหัสผ่านไม่สำเร็จ');
+
+        closeModal('modalChangePassword');
+        showToast(`เปลี่ยนรหัสผ่านของไอดี ${userId} สำเร็จแล้ว`, 'success');
+        await loadUsers();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function confirmDeleteUser(username) {
+      const targetUser = allUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
+      if (targetUser && targetUser.is_master) {
+        return showToast('ไม่สามารถลบบัญชีผู้ดูแลระบบสูงสุดได้', 'error');
+      }
+      if (!confirm(`ยืนยันการลบบัญชีไอดี "${username}" ออกจากระบบหรือไม่?`)) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/superadmin/users/${encodeURIComponent(username)}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'ลบผู้ใช้งานไม่สำเร็จ');
+
+        showToast(`ลบไอดี ${username} เรียบร้อยแล้ว`, 'success');
+        await loadUsers();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // ---------------- SECURITY RADAR (DEC-026) ----------------
+    async function loadSecurityLogs() {
+      try {
+        const res = await fetch(`${API_BASE}/security/logs`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.success) {
+          secAllLogs = data.logs || [];
+          renderBannedIps(data.banned_ips || []);
+          updateSecStats();
+          renderSecurityTable();
+        }
+      } catch (err) {
+        console.warn('Security logs fetch warning:', err.message);
+      }
+    }
+
+    function updateSecStats() {
+      const total = secAllLogs.length;
+      let info = 0, warn = 0, crit = 0;
+      secAllLogs.forEach(l => {
+        if (l.threat === 'CRITICAL') crit++;
+        else if (l.threat === 'WARN') warn++;
+        else info++;
+      });
+      document.getElementById('secStatTotal').textContent = total.toLocaleString();
+      document.getElementById('secStatInfo').textContent = info.toLocaleString();
+      document.getElementById('secStatWarn').textContent = warn.toLocaleString();
+      document.getElementById('secStatCrit').textContent = crit.toLocaleString();
+    }
+
+    function renderBannedIps(bannedList) {
+      const box = document.getElementById('secBannedBox');
+      const listEl = document.getElementById('secBannedList');
+      if (!bannedList || bannedList.length === 0) {
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+      listEl.innerHTML = bannedList.map(b => `
+        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(239,68,68,0.45); padding:6px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:10px; font-size:12.5px;">
+          <span class="mono" style="color:#fca5a5; font-weight:700;">${escapeHtml(b.ip)}</span>
+          <span style="color:var(--text-muted);">พยายามผิด ${b.attempts} ครั้ง (เหลือ ${b.remaining_minutes} นาที)</span>
+          <button class="btn btn-outline btn-sm" style="padding:2px 8px; font-size:11px;" onclick="unbanIp('${escapeHtml(b.ip)}')">ปลดแบน</button>
+        </div>
+      `).join('');
+    }
+
+    async function unbanIp(ip) {
+      try {
+        await fetch(`${API_BASE}/security/unban-ip`, {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ ip })
+        });
+        showToast(`ปลดแบน IP ${ip || 'ทั้งหมด'} เรียบร้อยแล้ว`, 'success');
+        loadSecurityLogs();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function setSecFilter(level) {
+      secCurrentFilter = level;
+      document.querySelectorAll('.sec-filter-btn').forEach(btn => {
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.className = 'btn btn-outline btn-sm sec-filter-btn';
+      });
+      const activeBtn = document.getElementById(`secFilter-${level}`);
+      if (activeBtn) {
+        activeBtn.style.background = level === 'CRITICAL' ? '#ef4444' : (level === 'WARN' ? '#f59e0b' : (level === 'INFO' ? '#10b981' : '#3b82f6'));
+        activeBtn.style.color = '#fff';
+      }
+      renderSecurityTable();
+    }
+
+    function renderSecurityTable() {
+      const tbody = document.getElementById('secLogsBody');
+      const q = (document.getElementById('secSearchInput').value || '').trim().toLowerCase();
+
+      const filtered = secAllLogs.filter(l => {
+        if (secCurrentFilter !== 'ALL' && l.threat !== secCurrentFilter) return false;
+        if (q) {
+          const hay = `${l.ip} ${l.path} ${l.reason} ${l.ua} ${l.method}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      }).slice().reverse();
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:36px; color:var(--text-muted);">ไม่พบรายการบันทึกเหตุการณ์</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.slice(0, 150).map(l => {
+        const tColor = l.threat === 'CRITICAL' ? '#ef4444' : (l.threat === 'WARN' ? '#f59e0b' : '#10b981');
+        const tBg = l.threat === 'CRITICAL' ? 'rgba(239,68,68,0.16)' : (l.threat === 'WARN' ? 'rgba(245,158,11,0.16)' : 'rgba(16,185,129,0.14)');
+        const sColor = l.status >= 400 ? '#fca5a5' : '#34d399';
+
+        return `
+          <tr>
+            <td class="mono" style="font-size:12px; color:var(--text-sub); white-space:nowrap;">${escapeHtml(l.timestamp)}</td>
+            <td>
+              <span style="padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700; background:${tBg}; color:${tColor}; border:1px solid ${tColor}44;">
+                ${escapeHtml(l.threat)}
+              </span>
+            </td>
+            <td class="mono" style="font-weight:600; color:#e2e8f0;">${escapeHtml(l.ip)}</td>
+            <td class="mono" style="font-size:12px; color:#93c5fd;">${escapeHtml(l.method)}</td>
+            <td class="mono" style="font-size:12px; color:#cbd5e1; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(l.path)}">${escapeHtml(l.path)}</td>
+            <td class="mono" style="font-size:12px; color:${sColor}; font-weight:700;">${escapeHtml(l.status)} <span style="color:var(--text-muted); font-weight:400;">(${l.duration || 1}ms)</span></td>
+            <td style="font-size:13px; color:#f1f5f9;">${escapeHtml(l.reason)}</td>
+            <td style="font-size:11.5px; color:var(--text-muted); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(l.ua)}">${escapeHtml(l.ua)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function clearSecurityLogs() {
+      if (!confirm('ยืนยันการล้างประวัติ Security Audit Logs ทั้งหมดหรือไม่?')) return;
+      try {
+        await fetch(`${API_BASE}/security/logs`, { method: 'DELETE', headers: getAuthHeaders() });
+        showToast('ล้างประวัติ Security Logs เรียบร้อยแล้ว', 'success');
+        loadSecurityLogs();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function exportSecurityLogs() {
+      const blob = new Blob([JSON.stringify(secAllLogs, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `polemap_security_logs_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Auto-unlock if already authenticated in sessionStorage, or pre-render table immediately
+    window.addEventListener('DOMContentLoaded', () => {
+      renderUsersTable();
+      updateUserKpis();
+      const savedUser = sessionStorage.getItem('polemap_back_user');
+      if (savedUser) {
+        try {
+          unlockCockpit(JSON.parse(savedUser));
+        } catch (_) {}
+      }
+    });
+  </script>
+</body>
+</html>

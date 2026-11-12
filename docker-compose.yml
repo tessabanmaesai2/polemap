@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  polemap:
+    build: .
+    container_name: polemap
+    restart: always
+    ports:
+      - "3406:3406"
+    environment:
+      - PORT=3406
+      - NODE_ENV=production
+      - MASTER_KEY=thedatazero
+      - MASTER_PASSWORD=Kn123990002466119842528
+    volumes:
+      - ./data:/app/data
+      - ./public/uploads:/app/public/uploads
+      - ./index.html:/app/index.html
+      - ./manage.html:/app/manage.html
+      - ./back.html:/app/back.html
+

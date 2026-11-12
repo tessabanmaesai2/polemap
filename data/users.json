@@ -1,0 +1,79 @@
+[
+  {
+    "id": 1,
+    "username": "thedatazero",
+    "name": "ผู้ดูแลระบบสูงสุด (Master Key)",
+    "role": "superadmin",
+    "is_master": true,
+    "is_active": 1,
+    "salt": "e9301b553960641b8838729af23bdab6",
+    "hash": "af0e240ae176dccef85e61a7d3a1fd0c7a0d54899e7d937033e799a2415a59783c888ab7ccb1d60b872ec48b269c749c09eb1e0ae2b22fce7f0fb8ea0de77fa7",
+    "created_at": "17/02/2569 09:00:00",
+    "last_login": "12/11/2569 14:40:44"
+  },
+  {
+    "id": 2,
+    "username": "admin",
+    "name": "ผู้ดูแลระบบ",
+    "role": "admin",
+    "is_master": false,
+    "is_active": 1,
+    "salt": "b6f9f29c585bf763be86119ade1c6501",
+    "hash": "522d10a4f11c9434b90707544b6cad7487640e30dfecc4dd952d605c8a84e13cb8269ab388b771aa785b312e0c50c61594ced5ef72251fdac8807d961bbc7501",
+    "created_at": "17/02/2569 09:00:00",
+    "last_login": "-",
+    "updated_at": "12/11/2569 14:12:53"
+  },
+  {
+    "id": 3,
+    "username": "horn",
+    "name": "เอ",
+    "role": "staff",
+    "is_master": false,
+    "is_active": 1,
+    "salt": "e3ddea3e4aaa3b32a93226730be59763",
+    "hash": "60a85ecebb49d0e7445214811e23df0d13175e6779ba5bb121a2685d7ee29979bff5e39ac2d72d9009f975f540113fab69f7a4222968be3a9fb228e1732a1963",
+    "created_at": "17/02/2569 09:00:00",
+    "last_login": "-",
+    "updated_at": "12/11/2569 14:11:29"
+  },
+  {
+    "id": 4,
+    "username": "monitor_msi",
+    "name": "เอ๋",
+    "role": "staff",
+    "is_master": false,
+    "is_active": 1,
+    "salt": "b2177dd28db2d8055f31c8d9409d44bc",
+    "hash": "6206a6b1a5b66cdfb6e1ae4af411486dd4dc59cdd5da5c10621fc89f30ac816e560fd6ad998b17c1bdb8e6a645002b8b8708961c58e2d3d42a15940c609af89d",
+    "created_at": "17/02/2569 09:00:00",
+    "last_login": "-",
+    "updated_at": "12/11/2569 14:11:50"
+  },
+  {
+    "id": 5,
+    "username": "phachara",
+    "name": "เซ็ต",
+    "role": "staff",
+    "is_master": false,
+    "is_active": 1,
+    "salt": "42da3d1766ca7478a34207959ab2f20b",
+    "hash": "ec92efc2485eaef5183413c0a3087557407e48f5b6b8b932655cd3b714507e327afae59c7459af00fd78441d3823186ee0a927e2538ccfbec68b12c19c2e514b",
+    "created_at": "17/02/2569 09:00:00",
+    "last_login": "-",
+    "updated_at": "12/11/2569 14:12:01"
+  },
+  {
+    "id": 6,
+    "username": "dump",
+    "name": "ดั้ม",
+    "role": "staff",
+    "is_master": false,
+    "is_active": 1,
+    "salt": "8b24aab2dfe266881f846f3a8af93315",
+    "hash": "75b382e12a8868f538e5a1ce81427fab81cd664e2e2ea4918cc74000983b1ff6a298a29fee575aa883e31f9f45835d2fc39aecd6ce81bc87ba042a48b0ffcb86",
+    "created_at": "17/02/2569 09:00:00",
+    "last_login": "-",
+    "updated_at": "12/11/2569 14:12:11"
+  }
+]

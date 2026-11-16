@@ -248,6 +248,70 @@
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
 
+    /* ---------------- KPI FILTER BAR ---------------- */
+    .kpi-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px 18px;
+      margin-bottom: 16px;
+    }
+
+    .kpi-filter-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .kpi-filter-label {
+      font-family: 'Kanit', sans-serif;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-sub);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kpi-filter-select {
+      background: rgba(30, 41, 59, 0.95);
+      color: #f8fafc;
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+      min-width: 240px;
+    }
+
+    .kpi-filter-select:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .kpi-scope-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
     /* ---------------- KPI STATS ROW ---------------- */
     .kpi-grid {
       display: grid;
@@ -758,6 +822,28 @@
     <!-- ================= TAB 1: USER MANAGEMENT ================= -->
     <section class="tab-pane active" id="paneUsers">
 
+      <!-- DEVICE TYPE FILTER BAR -->
+      <div class="kpi-filter-bar">
+        <div class="kpi-filter-left">
+          <label for="deviceTypeFilter" class="kpi-filter-label">
+            <i class="fa-solid fa-filter" style="color:#60a5fa;"></i>
+            กรองตัวเลข KPI และผลงานสำรวจตามประเภทอุปกรณ์:
+          </label>
+          <select id="deviceTypeFilter" class="kpi-filter-select" onchange="onDeviceTypeFilterChange()">
+            <option value="">ทุกประเภทอุปกรณ์ (รวมทั้งหมด)</option>
+            <option value="ลำโพง">🔊 ลำโพง</option>
+            <option value="ลำโพงไร้สาย">📡 ลำโพงไร้สาย</option>
+            <option value="กล้องวงจรปิด">📹 กล้องวงจรปิด</option>
+            <option value="เครื่องขยายเสียง">🎛️ เครื่องขยายเสียง</option>
+            <option value="เซิฟเวอร์วงจรปิด">🖥️ เซิฟเวอร์วงจรปิด</option>
+          </select>
+        </div>
+        <div class="kpi-scope-badge" id="kpiScopeBadge">
+          <i class="fa-solid fa-layer-group"></i>
+          กำลังแสดง: ทุกประเภทอุปกรณ์
+        </div>
+      </div>
+
       <!-- KPI ROW -->
       <div class="kpi-grid">
         <div class="kpi-card">
@@ -773,9 +859,9 @@
 
         <div class="kpi-card">
           <div class="kpi-info">
-            <div class="label">จุดติดตั้งในระบบทั้งหมด</div>
+            <div class="label" id="kpiPolesLabel">จุดติดตั้งในระบบ (ทุกประเภท)</div>
             <div class="value" id="kpiTotalPoles" style="color:#34d399;">378</div>
-            <div class="sub">10 ชุมชนในเขตเทศบาลตำบลแม่สาย</div>
+            <div class="sub" id="kpiPolesSub">10 ชุมชนในเขตเทศบาลตำบลแม่สาย</div>
           </div>
           <div class="kpi-icon" style="background:rgba(16,185,129,0.15); color:#34d399;">
             <i class="fa-solid fa-tower-broadcast"></i>
@@ -784,7 +870,7 @@
 
         <div class="kpi-card">
           <div class="kpi-info">
-            <div class="label">สำรวจมากที่สุด (Top Surveyor)</div>
+            <div class="label" id="kpiTopLabel">สำรวจมากที่สุด (Top Surveyor — ทุกประเภท)</div>
             <div class="value" id="kpiTopSurveyor" style="color:#c4b5fd; font-size:21px;">dump (220 จุด)</div>
             <div class="sub" id="kpiSecondSurveyor">horn (84 จุด) • phachara (74 จุด)</div>
           </div>
@@ -1279,28 +1365,73 @@
     }
 
     // ---------------- USER MANAGEMENT ----------------
+    let currentUsersMeta = null;
+
+    function onDeviceTypeFilterChange() {
+      loadUsers();
+    }
+
     async function loadUsers() {
+      const filterEl = document.getElementById('deviceTypeFilter');
+      const deviceType = filterEl ? filterEl.value : '';
+      const qs = deviceType ? `?device_type=${encodeURIComponent(deviceType)}` : '';
       try {
-        const res = await fetch(`${API_BASE}/superadmin/users`, { headers: getAuthHeaders() });
+        const res = await fetch(`${API_BASE}/superadmin/users${qs}`, { headers: getAuthHeaders() });
         const data = await res.json();
         if (data.success && Array.isArray(data.users || data.data)) {
           allUsers = data.users || data.data;
+          currentUsersMeta = data.meta || null;
         }
       } catch (err) {
         console.warn('Using preloaded users fallback:', err.message);
       }
-      updateUserKpis();
+      updateUserKpis(deviceType);
       renderUsersTable();
     }
 
-    function updateUserKpis() {
+    function updateUserKpis(deviceType = '') {
       document.getElementById('kpiTotalUsers').textContent = allUsers.length;
+      const scopeText = deviceType ? `เฉพาะ: ${deviceType}` : 'ทุกประเภทอุปกรณ์';
+      const badgeEl = document.getElementById('kpiScopeBadge');
+      if (badgeEl) {
+        badgeEl.innerHTML = `<i class="fa-solid fa-layer-group"></i> กำลังแสดง: ${escapeHtml(scopeText)}`;
+      }
+      const polesLabelEl = document.getElementById('kpiPolesLabel');
+      if (polesLabelEl) {
+        polesLabelEl.textContent = deviceType ? `จุดติดตั้ง (${deviceType})` : 'จุดติดตั้งในระบบ (ทุกประเภท)';
+      }
+      const topLabelEl = document.getElementById('kpiTopLabel');
+      if (topLabelEl) {
+        topLabelEl.textContent = deviceType ? `สำรวจมากที่สุด (${deviceType})` : 'สำรวจมากที่สุด (Top Surveyor — ทุกประเภท)';
+      }
+
+      if (currentUsersMeta) {
+        document.getElementById('kpiTotalPoles').textContent = currentUsersMeta.total_poles ?? 0;
+        const polesSubEl = document.getElementById('kpiPolesSub');
+        if (polesSubEl) {
+          if (!deviceType && currentUsersMeta.by_type) {
+            const breakdown = Object.entries(currentUsersMeta.by_type)
+              .map(([k, v]) => `${k} ${v}`)
+              .join(' • ');
+            polesSubEl.textContent = `${currentUsersMeta.communities_count || 0} ชุมชน (${breakdown || 'ไม่มีข้อมูล'})`;
+          } else {
+            polesSubEl.textContent = `${currentUsersMeta.communities_count || 0} ชุมชนในเขตเทศบาลตำบลแม่สาย`;
+          }
+        }
+      }
+
       const sorted = [...allUsers].filter(u => (u.survey_count || 0) > 0).sort((a, b) => (b.survey_count || 0) - (a.survey_count || 0));
       if (sorted[0]) {
         document.getElementById('kpiTopSurveyor').textContent = `${sorted[0].username} (${sorted[0].survey_count} จุด)`;
+      } else {
+        document.getElementById('kpiTopSurveyor').textContent = 'ไม่มีข้อมูล (0 จุด)';
       }
       if (sorted.length > 1) {
         document.getElementById('kpiSecondSurveyor').textContent = sorted.slice(1).map(u => `${u.username} (${u.survey_count} จุด)`).join(' • ');
+      } else if (sorted.length === 1) {
+        document.getElementById('kpiSecondSurveyor').textContent = 'มีผู้สำรวจ 1 บัญชีในหมวดนี้';
+      } else {
+        document.getElementById('kpiSecondSurveyor').textContent = deviceType ? `ยังไม่มีการสำรวจประเภท "${deviceType}"` : 'ยังไม่มีข้อมูลการสำรวจ';
       }
     }
 

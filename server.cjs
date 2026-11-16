@@ -442,7 +442,7 @@ function parseThaiTimestamp(str) {
   return new Date(dParts[2] - 543, dParts[1] - 1, dParts[0], tParts[0] || 0, tParts[1] || 0, tParts[2] || 0).getTime() || 0;
 }
 
-function buildUsersWithStats() {
+function buildUsersWithStats(deviceTypeFilter = '') {
   const users = readJson(USERS_FILE, []);
   const poles = readJson(POLES_FILE, []);
 
@@ -460,8 +460,21 @@ function buildUsersWithStats() {
   });
   if (modified) writeJsonAtomic(USERS_FILE, users);
 
-  const statsMap = {};
+  const byType = {};
   poles.forEach(p => {
+    const dt = String(p.device_type || 'ลำโพง').trim() || 'ลำโพง';
+    byType[dt] = (byType[dt] || 0) + 1;
+  });
+
+  const cleanFilter = String(deviceTypeFilter || '').trim();
+  const filteredPoles = cleanFilter
+    ? poles.filter(p => (String(p.device_type || 'ลำโพง').trim() || 'ลำโพง') === cleanFilter)
+    : poles;
+
+  const communitiesSet = new Set();
+  const statsMap = {};
+  filteredPoles.forEach(p => {
+    if (p.community) communitiesSet.add(String(p.community).trim());
     const creator = String(p.created_by || '').trim().toLowerCase();
     const editor = String(p.updated_by || '').trim().toLowerCase();
     if (creator) {
@@ -483,7 +496,7 @@ function buildUsersWithStats() {
     }
   });
 
-  return users.map((u, idx) => {
+  const mappedUsers = users.map((u, idx) => {
     const key = u.username.toLowerCase();
     const st = statsMap[key] || { survey_count: 0, edit_count: 0, last_survey_at: '-' };
     const isMaster = Boolean(u.is_master || key === 'thedatazero' || String(u.role || '').toLowerCase() === 'superadmin');
@@ -503,11 +516,23 @@ function buildUsersWithStats() {
       last_survey_at: st.last_survey_at
     };
   });
+
+  return {
+    users: mappedUsers,
+    meta: {
+      total_poles: filteredPoles.length,
+      all_poles_total: poles.length,
+      communities_count: communitiesSet.size,
+      device_type: cleanFilter || 'ALL',
+      by_type: byType
+    }
+  };
 }
 
 function handleGetUsers(req, res) {
-  const safeUsers = buildUsersWithStats();
-  res.json({ success: true, users: safeUsers, data: safeUsers });
+  const deviceTypeFilter = String((req.query && req.query.device_type) || '').trim();
+  const result = buildUsersWithStats(deviceTypeFilter);
+  res.json({ success: true, users: result.users, data: result.users, meta: result.meta });
 }
 
 function handleCreateOrSaveUser(req, res) {

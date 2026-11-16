@@ -848,12 +848,12 @@
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-info">
-            <div class="label">บัญชีผู้ใช้งานทั้งหมด</div>
-            <div class="value" id="kpiTotalUsers" style="color:#60a5fa;">6</div>
-            <div class="sub">Superadmin (ล็อกถาวร) + เจ้าหน้าที่ 5 บัญชี</div>
+            <div class="label" id="kpiReadinessLabel">อัตราความพร้อมใช้งาน (ทุกประเภท)</div>
+            <div class="value" id="kpiReadinessVal" style="color:#60a5fa;">-</div>
+            <div class="sub" id="kpiReadinessSub">กำลังคำนวณจากข้อมูลจริง...</div>
           </div>
           <div class="kpi-icon" style="background:rgba(59,130,246,0.15); color:#60a5fa;">
-            <i class="fa-solid fa-users"></i>
+            <i class="fa-solid fa-gauge-high"></i>
           </div>
         </div>
 
@@ -870,18 +870,18 @@
 
         <div class="kpi-card">
           <div class="kpi-info">
-            <div class="label" id="kpiTopLabel">สำรวจมากที่สุด (Top Surveyor — ทุกประเภท)</div>
-            <div class="value" id="kpiTopSurveyor" style="color:#c4b5fd; font-size:21px;">dump (220 จุด)</div>
-            <div class="sub" id="kpiSecondSurveyor">horn (84 จุด) • phachara (74 จุด)</div>
+            <div class="label" id="kpiTopCommLabel">ชุมชนที่ติดตั้งสูงสุด (ทุกประเภท)</div>
+            <div class="value" id="kpiTopCommVal" style="color:#c4b5fd; font-size:19px;">-</div>
+            <div class="sub" id="kpiTopCommSub">กำลังโหลดข้อมูลชุมชน...</div>
           </div>
           <div class="kpi-icon" style="background:rgba(139,92,246,0.15); color:#c4b5fd;">
-            <i class="fa-solid fa-medal"></i>
+            <i class="fa-solid fa-map-location-dot"></i>
           </div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-info">
-            <div class="label" id="kpiStatusLabel">สถานะอุปกรณ์ (ทุกประเภท)</div>
+            <div class="label" id="kpiStatusLabel">สถานะอุปกรณ์ &amp; ตำแหน่งติดตั้ง</div>
             <div class="value" id="kpiStatusValue" style="color:#fbbf24; font-size:21px;">กำลังโหลด...</div>
             <div class="sub" id="kpiStatusSub">ชำรุด 0 • สูญหาย 0 • แก้ไข 0 ครั้ง</div>
           </div>
@@ -1390,27 +1390,44 @@
     }
 
     function updateUserKpis(deviceType = '') {
-      document.getElementById('kpiTotalUsers').textContent = allUsers.length;
       const scopeText = deviceType ? `เฉพาะ: ${deviceType}` : 'ทุกประเภทอุปกรณ์';
+      const scopeTag = deviceType ? deviceType : 'ทุกประเภท';
       const badgeEl = document.getElementById('kpiScopeBadge');
       if (badgeEl) {
         badgeEl.innerHTML = `<i class="fa-solid fa-layer-group"></i> กำลังแสดง: ${escapeHtml(scopeText)}`;
       }
+      const readinessLabelEl = document.getElementById('kpiReadinessLabel');
+      if (readinessLabelEl) readinessLabelEl.textContent = `อัตราความพร้อมใช้งาน (${scopeTag})`;
       const polesLabelEl = document.getElementById('kpiPolesLabel');
-      if (polesLabelEl) {
-        polesLabelEl.textContent = deviceType ? `จุดติดตั้ง (${deviceType})` : 'จุดติดตั้งในระบบ (ทุกประเภท)';
-      }
-      const topLabelEl = document.getElementById('kpiTopLabel');
-      if (topLabelEl) {
-        topLabelEl.textContent = deviceType ? `สำรวจมากที่สุด (${deviceType})` : 'สำรวจมากที่สุด (Top Surveyor — ทุกประเภท)';
-      }
+      if (polesLabelEl) polesLabelEl.textContent = deviceType ? `จุดติดตั้ง (${deviceType})` : 'จุดติดตั้งในระบบ (ทุกประเภท)';
+      const topCommLabelEl = document.getElementById('kpiTopCommLabel');
+      if (topCommLabelEl) topCommLabelEl.textContent = `ชุมชนที่ติดตั้งสูงสุด (${scopeTag})`;
       const statusLabelEl = document.getElementById('kpiStatusLabel');
-      if (statusLabelEl) {
-        statusLabelEl.textContent = deviceType ? `สถานะอุปกรณ์ (${deviceType})` : 'สถานะอุปกรณ์ (ทุกประเภท)';
-      }
+      if (statusLabelEl) statusLabelEl.textContent = `สถานะ & ตำแหน่งติดตั้ง (${scopeTag})`;
 
       if (currentUsersMeta) {
-        document.getElementById('kpiTotalPoles').textContent = currentUsersMeta.total_poles ?? 0;
+        const total = currentUsersMeta.total_poles ?? 0;
+        const bs = currentUsersMeta.by_status || {};
+        const okCount = bs['ใช้งานได้'] || 0;
+        const brokenCount = bs['ชำรุด'] || 0;
+        const missingCount = bs['สูญหาย'] || 0;
+        const totalEdits = currentUsersMeta.total_edits || 0;
+        const withPhoto = currentUsersMeta.with_photo_count || 0;
+
+        // Card 1: Readiness %
+        const pct = total > 0 ? Math.round((okCount / total) * 1000) / 10 : 0;
+        const rValEl = document.getElementById('kpiReadinessVal');
+        const rSubEl = document.getElementById('kpiReadinessSub');
+        if (rValEl) {
+          rValEl.textContent = total > 0 ? `${pct}%` : 'ไม่มีข้อมูล';
+          rValEl.style.color = pct >= 90 ? '#60a5fa' : (pct >= 70 ? '#fbbf24' : '#f87171');
+        }
+        if (rSubEl) {
+          rSubEl.textContent = `พร้อมใช้ ${okCount} จาก ${total} จุด • มีรูปภาพ ${withPhoto} จุด`;
+        }
+
+        // Card 2: Total Poles
+        document.getElementById('kpiTotalPoles').textContent = total;
         const polesSubEl = document.getElementById('kpiPolesSub');
         if (polesSubEl) {
           if (!deviceType && currentUsersMeta.by_type) {
@@ -1423,11 +1440,23 @@
           }
         }
 
-        const bs = currentUsersMeta.by_status || {};
-        const okCount = bs['ใช้งานได้'] || 0;
-        const brokenCount = bs['ชำรุด'] || 0;
-        const missingCount = bs['สูญหาย'] || 0;
-        const totalEdits = currentUsersMeta.total_edits || 0;
+        // Card 3: Top Communities
+        const topComms = currentUsersMeta.top_communities || [];
+        const tcValEl = document.getElementById('kpiTopCommVal');
+        const tcSubEl = document.getElementById('kpiTopCommSub');
+        if (tcValEl) {
+          tcValEl.textContent = topComms[0] ? `${topComms[0].name} (${topComms[0].count} จุด)` : 'ไม่มีข้อมูล (0 จุด)';
+        }
+        if (tcSubEl) {
+          tcSubEl.textContent = topComms.length > 1
+            ? topComms.slice(1).map(c => `${c.name} (${c.count})`).join(' • ')
+            : (topComms.length === 1 ? 'มีข้อมูล 1 ชุมชนในหมวดนี้' : `ยังไม่มีการติดตั้งประเภท "${scopeTag}"`);
+        }
+
+        // Card 4: Status & Location Breakdown
+        const locEntries = Object.entries(currentUsersMeta.by_location || {})
+          .map(([k, v]) => `${k} ${v}`)
+          .join(' • ');
         const statusValEl = document.getElementById('kpiStatusValue');
         const statusSubEl = document.getElementById('kpiStatusSub');
         if (statusValEl) {
@@ -1435,22 +1464,8 @@
           statusValEl.style.color = (brokenCount > 0 || missingCount > 0) ? '#fbbf24' : '#34d399';
         }
         if (statusSubEl) {
-          statusSubEl.textContent = `ชำรุด ${brokenCount} • สูญหาย ${missingCount} • แก้ไขรวม ${totalEdits} ครั้ง`;
+          statusSubEl.textContent = `ชำรุด ${brokenCount} • สูญหาย ${missingCount} • ${locEntries || 'ไม่มีจุดติดตั้ง'} • แก้ไข ${totalEdits} ครั้ง`;
         }
-      }
-
-      const sorted = [...allUsers].filter(u => (u.survey_count || 0) > 0).sort((a, b) => (b.survey_count || 0) - (a.survey_count || 0));
-      if (sorted[0]) {
-        document.getElementById('kpiTopSurveyor').textContent = `${sorted[0].username} (${sorted[0].survey_count} จุด)`;
-      } else {
-        document.getElementById('kpiTopSurveyor').textContent = 'ไม่มีข้อมูล (0 จุด)';
-      }
-      if (sorted.length > 1) {
-        document.getElementById('kpiSecondSurveyor').textContent = sorted.slice(1).map(u => `${u.username} (${u.survey_count} จุด)`).join(' • ');
-      } else if (sorted.length === 1) {
-        document.getElementById('kpiSecondSurveyor').textContent = 'มีผู้สำรวจ 1 บัญชีในหมวดนี้';
-      } else {
-        document.getElementById('kpiSecondSurveyor').textContent = deviceType ? `ยังไม่มีการสำรวจประเภท "${deviceType}"` : 'ยังไม่มีข้อมูลการสำรวจ';
       }
     }
 

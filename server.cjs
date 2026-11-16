@@ -472,11 +472,23 @@ function buildUsersWithStats(deviceTypeFilter = '') {
     : poles;
 
   const communitiesSet = new Set();
+  const communityCounts = {};
+  const locationCounts = {};
   const byStatus = { 'ใช้งานได้': 0, 'ชำรุด': 0, 'สูญหาย': 0 };
   let totalEdits = 0;
+  let withPhotoCount = 0;
   const statsMap = {};
   filteredPoles.forEach(p => {
-    if (p.community) communitiesSet.add(String(p.community).trim());
+    const comm = String(p.community || '').trim();
+    if (comm) {
+      communitiesSet.add(comm);
+      communityCounts[comm] = (communityCounts[comm] || 0) + 1;
+    }
+    const loc = String(p.location_type || 'เสาไฟ').trim() || 'เสาไฟ';
+    locationCounts[loc] = (locationCounts[loc] || 0) + 1;
+    if (p.image_url || p.image || (Array.isArray(p.images) && p.images.length > 0)) {
+      withPhotoCount++;
+    }
     const stVal = String(p.status || 'ใช้งานได้').trim() || 'ใช้งานได้';
     byStatus[stVal] = (byStatus[stVal] || 0) + 1;
     const creator = String(p.created_by || '').trim().toLowerCase();
@@ -522,12 +534,20 @@ function buildUsersWithStats(deviceTypeFilter = '') {
     };
   });
 
+  const topCommunities = Object.entries(communityCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name, count]) => ({ name, count }));
+
   return {
     users: mappedUsers,
     meta: {
       total_poles: filteredPoles.length,
       all_poles_total: poles.length,
       communities_count: communitiesSet.size,
+      top_communities: topCommunities,
+      by_location: locationCounts,
+      with_photo_count: withPhotoCount,
       device_type: cleanFilter || 'ALL',
       by_type: byType,
       by_status: byStatus,

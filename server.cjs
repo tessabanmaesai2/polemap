@@ -472,9 +472,13 @@ function buildUsersWithStats(deviceTypeFilter = '') {
     : poles;
 
   const communitiesSet = new Set();
+  const byStatus = { 'ใช้งานได้': 0, 'ชำรุด': 0, 'สูญหาย': 0 };
+  let totalEdits = 0;
   const statsMap = {};
   filteredPoles.forEach(p => {
     if (p.community) communitiesSet.add(String(p.community).trim());
+    const stVal = String(p.status || 'ใช้งานได้').trim() || 'ใช้งานได้';
+    byStatus[stVal] = (byStatus[stVal] || 0) + 1;
     const creator = String(p.created_by || '').trim().toLowerCase();
     const editor = String(p.updated_by || '').trim().toLowerCase();
     if (creator) {
@@ -489,6 +493,7 @@ function buildUsersWithStats(deviceTypeFilter = '') {
       }
     }
     if (editor) {
+      totalEdits++;
       if (!statsMap[editor]) {
         statsMap[editor] = { survey_count: 0, edit_count: 0, last_survey_at: '-', max_ts: 0 };
       }
@@ -524,7 +529,9 @@ function buildUsersWithStats(deviceTypeFilter = '') {
       all_poles_total: poles.length,
       communities_count: communitiesSet.size,
       device_type: cleanFilter || 'ALL',
-      by_type: byType
+      by_type: byType,
+      by_status: byStatus,
+      total_edits: totalEdits
     }
   };
 }

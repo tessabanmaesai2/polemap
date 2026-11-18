@@ -7,18 +7,17 @@ services:
     restart: always
     ports:
       - "3406:3406"
+    env_file:
+      - .env
     environment:
       - PORT=3406
       - NODE_ENV=production
-      - MASTER_KEY=thedatazero
-      - MASTER_PASSWORD=Kn123990002466119842528
     volumes:
       - ./data:/app/data
-      - ./public/uploads:/app/public/uploads
+      - ./public:/app/public
+      - ./src:/app/src
       - ./index.html:/app/index.html
       - ./manage.html:/app/manage.html
       - ./back.html:/app/back.html
       - ./server.cjs:/app/server.cjs
       - ./polemap_logo.png:/app/polemap_logo.png
-      - ./public/polemap_logo.png:/app/public/polemap_logo.png
-

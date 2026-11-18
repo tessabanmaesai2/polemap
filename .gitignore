@@ -1,7 +1,9 @@
 node_modules/
+.env
+.env.local
 .DS_Store
 Thumbs.db
 *.tmp
 .ai_temp/
 MAESAI SPEAKER MAP.xlsx
-
+data/security_logs.json
